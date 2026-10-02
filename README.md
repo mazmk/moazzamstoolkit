@@ -2,8 +2,10 @@
 
 A browser-based tool for two things:
 
-1. **Screen Recorder** — record your screen directly in the browser using the `getDisplayMedia` API and `MediaRecorder`, with recordings saved locally via IndexedDB.
-2. **Video Downloader** — download videos from developer tools like Loom and Jam (requires a proxy worker due to CORS; see `worker/`).
+1. **Screen Recorder** — record your screen (with a draggable webcam bubble) or just your webcam, using `getDisplayMedia`, `getUserMedia` and `MediaRecorder`. Recordings are saved locally via IndexedDB.
+2. **Video Downloader** — download Loom videos from a share link. Loom's endpoints allow cross-origin requests, so everything runs in the browser: newer videos are DASH streams whose separate audio/video tracks are merged client-side with [mediabunny](https://mediabunny.dev) (no re-encoding). Jam support is not implemented yet — Jam has no public endpoint for a recording's video.
+
+Light, dark and system themes are supported; colors are semantic tokens defined in `src/index.css`.
 
 ## Stack
 
@@ -11,6 +13,7 @@ A browser-based tool for two things:
 - **Tailwind CSS v4** via the Vite plugin
 - **React Router** for `/record` and `/download` routes
 - **Zustand** for state management
+- **mediabunny** to merge DASH audio/video into one WebM (lazy-loaded)
 - **idb-keyval** for IndexedDB storage
 - **fix-webm-duration** to patch WebM duration metadata
 - **lucide-react** for icons
@@ -48,5 +51,5 @@ src/
   shared/                # shared UI components, utils, types
   main.tsx
 
-worker/                  # future Cloudflare Worker proxy (see worker/README.md)
+worker/                  # placeholder for a CORS proxy, if a future provider needs one
 ```

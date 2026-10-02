@@ -77,14 +77,14 @@ export function RecorderStage({
     <div
       ref={stageRef}
       style={{ aspectRatio: aspect }}
-      className="relative w-full overflow-hidden rounded-lg border border-gray-800 bg-gray-900"
+      className="relative w-full overflow-hidden rounded-lg border border-line bg-surface"
     >
       {mode === 'camera' ? (
         <StreamVideo stream={camera} mirrored className="h-full w-full object-cover" />
       ) : screen ? (
         <StreamVideo stream={screen} className="h-full w-full object-contain" />
       ) : (
-        <div className="flex h-full flex-col items-center justify-center gap-2 text-gray-500">
+        <div className="flex h-full flex-col items-center justify-center gap-2 text-fg-subtle">
           <Monitor size={32} />
           <p className="text-sm">Your screen will appear here once you start recording</p>
         </div>

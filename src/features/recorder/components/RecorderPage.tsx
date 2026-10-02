@@ -12,9 +12,10 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import { formatDuration } from '@/shared/lib/format'
+
 import { useMediaPermissions } from '../hooks/useMediaPermissions'
 import { useScreenRecorder } from '../hooks/useScreenRecorder'
-import { formatDuration } from '../lib/format'
 import type { BubbleSize } from '../lib/overlay'
 import { useRecorderSettings, type RecordingMode } from '../store'
 import { PermissionGate } from './PermissionGate'
@@ -23,7 +24,7 @@ import { RecordingsList } from './RecordingsList'
 
 const MODES: { value: RecordingMode; label: string; icon: LucideIcon }[] = [
   { value: 'screen', label: 'Screen', icon: Monitor },
-  { value: 'camera', label: 'Camera', icon: Camera },
+  { value: 'camera', label: 'Webcam test', icon: Camera },
 ]
 
 const SIZES: { value: BubbleSize; label: string }[] = [
@@ -34,8 +35,12 @@ const SIZES: { value: BubbleSize; label: string }[] = [
 
 const toolButton =
   'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50'
-const toolOn = 'bg-gray-800 text-gray-100'
-const toolOff = 'text-gray-400 hover:text-gray-100'
+const toolOn = 'bg-surface-muted text-fg'
+const toolOff = 'text-fg-muted hover:text-fg'
+
+// Mobile browsers don't implement getDisplayMedia, so screen capture is desktop-only.
+const canCaptureScreen = () =>
+  typeof navigator !== 'undefined' && typeof navigator.mediaDevices?.getDisplayMedia === 'function'
 
 // Mounted only while recording, so the counter starts at 0:00 every time.
 function RecordingTimer() {
@@ -54,7 +59,9 @@ export function RecorderPage() {
   const permissions = useMediaPermissions()
   const { status, start, stop, error, screenStream } = useScreenRecorder()
 
-  const mode = useRecorderSettings((s) => s.mode)
+  const screenSupported = canCaptureScreen()
+  const preferredMode = useRecorderSettings((s) => s.mode)
+  const mode = screenSupported ? preferredMode : 'camera'
   const micEnabled = useRecorderSettings((s) => s.micEnabled)
   const overlay = useRecorderSettings((s) => s.overlay)
   const setMode = useRecorderSettings((s) => s.setMode)
@@ -76,10 +83,16 @@ export function RecorderPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-white">Screen Recorder</h1>
-      <p className="mt-2 text-gray-400">
+      <h1 className="text-2xl font-semibold text-fg">Screen Recorder</h1>
+      <p className="mt-2 text-fg-muted">
         Record your screen or webcam directly in the browser. Recordings are saved locally.
       </p>
+
+      {!screenSupported && permissions.ready && (
+        <p className="mt-4 rounded-md border border-line bg-surface px-3 py-2 text-sm text-fg-muted">
+          Screen recording needs a desktop browser. You can still record from your webcam here.
+        </p>
+      )}
 
       {!permissions.ready || !permissions.stream ? (
         <PermissionGate
@@ -90,26 +103,32 @@ export function RecorderPage() {
           onRequest={() => void permissions.request()}
         />
       ) : (
-        <div className="mt-8 space-y-4">
+        <div className="mt-6 space-y-4 sm:mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div
               role="group"
               aria-label="Recording mode"
-              className="flex gap-1 rounded-lg border border-gray-800 p-1"
+              className="flex w-full gap-1 rounded-lg border border-line bg-surface p-1 sm:w-auto"
             >
-              {MODES.map(({ value, label, icon: Icon }) => (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={mode === value}
-                  disabled={isActive}
-                  onClick={() => setMode(value)}
-                  className={`${toolButton} ${mode === value ? 'bg-indigo-600 text-white' : toolOff}`}
-                >
-                  <Icon size={15} />
-                  {label}
-                </button>
-              ))}
+              {MODES.map(({ value, label, icon: Icon }) => {
+                const unsupported = value === 'screen' && !screenSupported
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={mode === value}
+                    disabled={isActive || unsupported}
+                    title={
+                      unsupported ? 'Screen recording isn’t supported on this device' : undefined
+                    }
+                    onClick={() => setMode(value)}
+                    className={`${toolButton} flex-1 justify-center sm:flex-none ${mode === value ? 'bg-accent text-accent-fg' : toolOff}`}
+                  >
+                    <Icon size={15} />
+                    {label}
+                  </button>
+                )
+              })}
             </div>
 
             <div className="flex flex-wrap items-center gap-1">
@@ -121,7 +140,7 @@ export function RecorderPage() {
                 title={isActive ? 'Change the mic before you start recording' : undefined}
                 className={`${toolButton} ${micEnabled ? toolOn : toolOff}`}
               >
-                {micEnabled ? <Mic size={15} /> : <MicOff size={15} className="text-red-400" />}
+                {micEnabled ? <Mic size={15} /> : <MicOff size={15} className="text-danger" />}
                 {micEnabled ? 'Mic on' : 'Mic off'}
               </button>
 
@@ -165,12 +184,12 @@ export function RecorderPage() {
             onOverlayChange={setOverlay}
           />
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {isRecording ? (
               <button
                 type="button"
                 onClick={stop}
-                className="flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-danger-solid px-4 py-2 text-sm font-medium text-accent-fg transition-colors hover:bg-danger-solid-hover sm:w-auto"
               >
                 <Square size={15} fill="currentColor" />
                 Stop recording
@@ -180,7 +199,7 @@ export function RecorderPage() {
                 type="button"
                 onClick={handleStart}
                 disabled={isBusy}
-                className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 {isBusy ? (
                   <Loader2 size={15} className="animate-spin" />
@@ -198,19 +217,19 @@ export function RecorderPage() {
             )}
 
             {isRecording && (
-              <span className="flex items-center gap-2 text-sm text-red-400">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+              <span className="flex items-center gap-2 text-sm text-danger">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-danger-solid" />
                 <RecordingTimer />
               </span>
             )}
 
             {mode === 'screen' && !isActive && (
-              <span className="text-xs text-gray-500">Drag the webcam bubble to position it.</span>
+              <span className="text-xs text-fg-subtle">Drag the webcam bubble to position it.</span>
             )}
           </div>
 
           {status === 'error' && error && (
-            <p role="alert" className="text-sm text-red-400">
+            <p role="alert" className="text-sm text-danger">
               Recording failed: {error.message}
             </p>
           )}

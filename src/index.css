@@ -1,1 +1,71 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* Dark mode follows the `.dark` class on <html>, set from the user's theme choice (see shared/theme). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Semantic color tokens. Components use these (bg-surface, text-fg-muted, border-line…) instead of
+ * raw palette colors, so light and dark themes are defined in one place below.
+ */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-text: var(--accent-text);
+  --color-danger: var(--danger);
+  --color-danger-solid: var(--danger-solid);
+  --color-danger-solid-hover: var(--danger-solid-hover);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+}
+
+:root {
+  color-scheme: light;
+  --canvas: #f6f7f9;
+  --surface: #ffffff;
+  --surface-muted: #eceef2;
+  --line: #e1e4ea;
+  --fg: #12141a;
+  --fg-muted: #555b67;
+  --fg-subtle: #666c78;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-fg: #ffffff;
+  --accent-text: #4338ca;
+  --danger: #c81e1e;
+  --danger-solid: #dc2626;
+  --danger-solid-hover: #b91c1c;
+  --success: #047857;
+  --warning: #a14b06;
+}
+
+:root.dark {
+  color-scheme: dark;
+  --canvas: #0b0c10;
+  --surface: #14161c;
+  --surface-muted: #20232b;
+  --line: #2a2e37;
+  --fg: #eceef3;
+  --fg-muted: #a3a9b5;
+  --fg-subtle: #858c98;
+  --accent: #4f46e5;
+  --accent-hover: #5b52f0;
+  --accent-fg: #ffffff;
+  --accent-text: #a5b4fc;
+  --danger: #f87171;
+  --danger-solid: #dc2626;
+  --danger-solid-hover: #e02d2d;
+  --success: #34d399;
+  --warning: #fbbf24;
+}
+
+body {
+  @apply bg-canvas text-fg antialiased;
+}

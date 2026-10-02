@@ -4,7 +4,22 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>screennest</title>
+    <meta name="color-scheme" content="light dark" />
+    <title>ScreenNest</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a flash of the wrong theme.
+      // Mirrors useApplyTheme in src/shared/theme/theme.ts.
+      ;(function () {
+        var theme = 'system'
+        try {
+          theme = JSON.parse(localStorage.getItem('screennest:theme')).state.theme || 'system'
+        } catch (e) {}
+        var dark =
+          theme === 'dark' ||
+          (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
