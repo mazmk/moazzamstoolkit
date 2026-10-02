@@ -1,4 +1,7 @@
-import { Camera, Loader2, Mic, type LucideIcon } from 'lucide-react'
+import { Camera, Loader2, Mic, ShieldCheck, type LucideIcon } from 'lucide-react'
+
+import { GlassButton } from '@/shared/ui/GlassButton'
+import { InlineError } from '@/shared/ui/InlineError'
 
 import type { DevicePermission } from '../hooks/useMediaPermissions'
 
@@ -29,16 +32,17 @@ function DeviceRow({
 }) {
   const label = LABELS[state]
   return (
-    <li className="flex items-center justify-between px-4 py-3">
-      <span className="flex items-center gap-2 text-sm text-fg">
-        <Icon size={16} className="text-fg-muted" />
+    <li className="glass-inset flex h-12 items-center justify-between px-4">
+      <span className="flex items-center gap-2.5 text-sm text-fg">
+        <Icon size={17} className="text-fg-muted" />
         {name}
       </span>
-      <span className={`text-sm ${label.className}`}>{label.text}</span>
+      <span className={`text-sm font-medium ${label.className}`}>{label.text}</span>
     </li>
   )
 }
 
+/** Rendered inside the recorder card, so it uses inset materials only. */
 export function PermissionGate({
   camera,
   microphone,
@@ -50,40 +54,40 @@ export function PermissionGate({
   const checking = camera === 'checking' || microphone === 'checking'
 
   return (
-    <div className="mt-6 max-w-md rounded-lg border border-line bg-surface p-4 sm:mt-8 sm:p-6">
-      <h2 className="text-lg font-medium text-fg">Allow camera and microphone</h2>
-      <p className="mt-1 text-sm text-fg-muted">
+    <div className="mx-auto flex max-w-sm flex-col items-center py-4 text-center">
+      <span className="glass-inset grid size-14 place-items-center text-accent-text">
+        <ShieldCheck size={26} />
+      </span>
+      <h2 className="mt-5 text-xl font-semibold tracking-tight">Allow camera and microphone</h2>
+      <p className="mt-2 text-sm text-fg-muted">
         ScreenNest needs both to record. You can turn the mic off or hide your webcam before you
-        start recording.
+        start.
       </p>
 
-      <ul className="mt-5 divide-y divide-line rounded-md border border-line">
+      <ul className="mt-6 flex w-full flex-col gap-2">
         <DeviceRow icon={Camera} name="Camera" state={camera} />
         <DeviceRow icon={Mic} name="Microphone" state={microphone} />
       </ul>
 
       {unsupported ? (
-        <p className="mt-4 text-sm text-danger">
+        <InlineError className="mt-6 w-full text-left">
           This browser can’t access a camera or microphone here. Use a recent Chrome, Edge or
           Firefox over HTTPS or localhost.
-        </p>
+        </InlineError>
       ) : (
-        <button
-          type="button"
+        <GlassButton
+          variant="primary"
+          size="lg"
           onClick={onRequest}
           disabled={requesting || checking}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          icon={requesting ? <Loader2 size={18} className="animate-spin" /> : undefined}
+          className="mt-6 w-full sm:w-auto"
         >
-          {requesting && <Loader2 size={15} className="animate-spin" />}
           {requesting ? 'Waiting for permission…' : 'Grant access'}
-        </button>
+        </GlassButton>
       )}
 
-      {error && (
-        <p role="alert" className="mt-4 text-sm text-danger">
-          {error}
-        </p>
-      )}
+      {error && <InlineError className="mt-4 w-full text-left">{error}</InlineError>}
     </div>
   )
 }

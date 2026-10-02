@@ -40,7 +40,7 @@ describe('RecorderPage permissions', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Grant access' }))
 
     expect(await screen.findByRole('button', { name: /start recording/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /mic on/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mic', pressed: true })).toBeInTheDocument()
   })
 
   it('explains how to recover when access is blocked', async () => {

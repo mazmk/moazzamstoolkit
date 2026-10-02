@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -32,7 +32,7 @@ afterEach(() => {
 
 async function submit(url: string) {
   await userEvent.type(screen.getByLabelText('Video link'), url)
-  await userEvent.click(screen.getByRole('button', { name: 'Fetch video' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Fetch' }))
 }
 
 describe('DownloaderPage', () => {
@@ -43,8 +43,16 @@ describe('DownloaderPage', () => {
     await submit(`https://www.loom.com/share/${LOOM_ID}`)
 
     expect(await screen.findByRole('heading', { name: 'Sprint demo' })).toBeInTheDocument()
-    expect(screen.getByText('Loom · 1:29')).toBeInTheDocument()
-    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['1080p', '720p'])
+    const card = screen.getByRole('article')
+    expect(within(card).getByText('Loom')).toBeInTheDocument()
+    expect(screen.getByLabelText('Duration')).toHaveTextContent('1:29')
+    const quality = screen.getByRole('radiogroup', { name: 'Quality' })
+    expect(
+      within(quality)
+        .getAllByRole('radio')
+        .map((o) => o.textContent),
+    ).toEqual(['1080p', '720p'])
+    expect(within(quality).getByRole('radio', { name: '1080p' })).toBeChecked()
     expect(screen.getByRole('button', { name: 'Download' })).toBeInTheDocument()
   })
 

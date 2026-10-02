@@ -9,3 +9,9 @@ if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.sho
     this.open = false
   }
 }
+
+// jsdom has no object URLs; media components only need a string to assign.
+if (typeof URL.createObjectURL !== 'function') {
+  URL.createObjectURL = () => 'blob:test'
+  URL.revokeObjectURL = () => {}
+}

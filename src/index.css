@@ -1,71 +1,163 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+@import './styles/tokens.css';
+@import './styles/glass.css';
 
 /* Dark mode follows the `.dark` class on <html>, set from the user's theme choice (see shared/theme). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/*
- * Semantic color tokens. Components use these (bg-surface, text-fg-muted, border-line…) instead of
- * raw palette colors, so light and dark themes are defined in one place below.
- */
+/* Expose tokens as Tailwind utilities (text-fg, rounded-card, font-mono, ease-spring…).
+   Gradients and glass surfaces use the CSS variables / glass utilities directly. */
 @theme inline {
-  --color-canvas: var(--canvas);
-  --color-surface: var(--surface);
-  --color-surface-muted: var(--surface-muted);
-  --color-line: var(--line);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --radius-card: var(--radius-card);
+  --radius-frame: var(--radius-frame);
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
   --color-fg-subtle: var(--fg-subtle);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
+  --color-accent: var(--accent-from);
+  --color-accent-to: var(--accent-to);
   --color-accent-fg: var(--accent-fg);
   --color-accent-text: var(--accent-text);
+  --color-focus: var(--focus-ring);
   --color-danger: var(--danger);
   --color-danger-solid: var(--danger-solid);
-  --color-danger-solid-hover: var(--danger-solid-hover);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-recording: var(--recording);
+  --color-inset: var(--glass-bg-inset);
+  --color-inset-hover: var(--glass-bg-inset-hover);
+  --ease-spring: var(--ease-spring);
+  --ease-out: var(--ease-out);
 }
 
-:root {
-  color-scheme: light;
-  --canvas: #f6f7f9;
-  --surface: #ffffff;
-  --surface-muted: #eceef2;
-  --line: #e1e4ea;
-  --fg: #12141a;
-  --fg-muted: #555b67;
-  --fg-subtle: #666c78;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-fg: #ffffff;
-  --accent-text: #4338ca;
-  --danger: #c81e1e;
-  --danger-solid: #dc2626;
-  --danger-solid-hover: #b91c1c;
-  --success: #047857;
-  --warning: #a14b06;
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--bg-base);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* One clearly visible focus treatment everywhere, including on glass. */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* lucide-react icons render at 1.5px stroke app-wide; CSS overrides the SVG attribute. */
+  .lucide {
+    stroke-width: 1.5;
+  }
 }
 
-:root.dark {
-  color-scheme: dark;
-  --canvas: #0b0c10;
-  --surface: #14161c;
-  --surface-muted: #20232b;
-  --line: #2a2e37;
-  --fg: #eceef3;
-  --fg-muted: #a3a9b5;
-  --fg-subtle: #858c98;
-  --accent: #4f46e5;
-  --accent-hover: #5b52f0;
-  --accent-fg: #ffffff;
-  --accent-text: #a5b4fc;
-  --danger: #f87171;
-  --danger-solid: #dc2626;
-  --danger-solid-hover: #e02d2d;
-  --success: #34d399;
-  --warning: #fbbf24;
+/* Ambient background ---------------------------------------------------------------------------- */
+
+@keyframes drift-1 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(12vw, 8vh, 0) scale(1.15);
+  }
+}
+@keyframes drift-2 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.1);
+  }
+  50% {
+    transform: translate3d(-10vw, 12vh, 0) scale(0.95);
+  }
+}
+@keyframes drift-3 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(8vw, -10vh, 0) scale(1.2);
+  }
+}
+@keyframes drift-4 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(-12vw, -6vh, 0) scale(0.9);
+  }
 }
 
-body {
-  @apply bg-canvas text-fg antialiased;
+/* Blobs are radial gradients rather than filter: blur(), which keeps them cheap to animate and
+   doesn't count against the "≤3 blurred layers" budget. */
+.ambient-blob {
+  position: absolute;
+  border-radius: 9999px;
+  opacity: var(--blob-opacity);
+  will-change: transform;
+}
+
+/* One-shot animations ------------------------------------------------------------------------------ */
+
+@keyframes countdown-pop {
+  0% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes recording-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(239 68 68 / 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgb(239 68 68 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ambient-blob,
+  .countdown-number {
+    /* countdown-pop ends at opacity 0, so shortening it would hide the number entirely. */
+    animation: none !important;
+  }
 }

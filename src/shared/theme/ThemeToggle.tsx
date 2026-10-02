@@ -1,11 +1,13 @@
-import { Monitor, Moon, Sun, type LucideIcon } from 'lucide-react'
+import { Monitor, Moon, Sun } from 'lucide-react'
+
+import { Segmented } from '@/shared/ui/Segmented'
 
 import { useThemeStore, type Theme } from './theme'
 
-const OPTIONS: { value: Theme; label: string; icon: LucideIcon }[] = [
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'dark', label: 'Dark', icon: Moon },
-  { value: 'system', label: 'System', icon: Monitor },
+const OPTIONS = [
+  { value: 'light' as const, label: 'Light theme', icon: <Sun size={15} /> },
+  { value: 'dark' as const, label: 'Dark theme', icon: <Moon size={15} /> },
+  { value: 'system' as const, label: 'System theme', icon: <Monitor size={15} /> },
 ]
 
 export function ThemeToggle() {
@@ -13,27 +15,13 @@ export function ThemeToggle() {
   const setTheme = useThemeStore((s) => s.setTheme)
 
   return (
-    <div
-      role="radiogroup"
+    <Segmented<Theme>
       aria-label="Theme"
-      className="flex shrink-0 gap-0.5 rounded-lg border border-line bg-surface p-0.5"
-    >
-      {OPTIONS.map(({ value, label, icon: Icon }) => (
-        <button
-          key={value}
-          type="button"
-          role="radio"
-          aria-checked={theme === value}
-          aria-label={`${label} theme`}
-          title={`${label} theme`}
-          onClick={() => setTheme(value)}
-          className={`rounded-md p-1.5 transition-colors ${
-            theme === value ? 'bg-surface-muted text-fg' : 'text-fg-subtle hover:text-fg'
-          }`}
-        >
-          <Icon size={15} />
-        </button>
-      ))}
-    </div>
+      options={OPTIONS}
+      value={theme}
+      onChange={setTheme}
+      iconOnly
+      size="sm"
+    />
   )
 }
