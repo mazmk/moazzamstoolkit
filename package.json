@@ -11,7 +11,8 @@
     "format": "prettier --write src",
     "test": "vitest",
     "typecheck": "tsc -b --noEmit",
-    "check:contrast": "node scripts/check-contrast.mjs"
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "generate:images": "node --experimental-strip-types --no-warnings scripts/generate-images.mts"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.12.10",

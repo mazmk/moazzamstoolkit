@@ -51,11 +51,9 @@ jobs:
         env:
           # Project pages are served from /<repo>/, so assets and routes need that prefix.
           VITE_BASE: ${{ steps.pages.outputs.base_path }}/
-
-      # GitHub Pages has no SPA fallback: serve the app for unknown paths so deep links
-      # like /<repo>/download load instead of 404ing.
-      - name: Add SPA fallback
-        run: cp dist/index.html dist/404.html
+          # Absolute URLs for canonical links, link previews (og:image) and the sitemap.
+          # The build also writes per-tool pages and a noindex 404.html SPA fallback.
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -11,7 +11,15 @@ import { Menu } from '@/shared/ui/Menu'
 import { Toaster } from '@/shared/ui/Toast'
 
 import { CommandPalette, isMac } from './CommandPalette'
-import { findToolByPath, toolsByCategory } from './tools'
+import { SITE, pageTitle } from './toolMeta'
+import { TOOLS, findToolByPath, toolsByCategory } from './tools'
+
+/** Re-points a canonical URL at another page, stripping only known tool paths from the current one. */
+export function canonicalFor(current: string, toolPath?: string): string {
+  const own = TOOLS.map((t) => `${t.path.slice(1)}/`).find((p) => current.endsWith(`/${p}`))
+  const root = own ? current.slice(0, -own.length) : current
+  return toolPath ? `${root}${toolPath.slice(1)}/` : root
+}
 
 function Logo() {
   return (
@@ -96,8 +104,14 @@ export function Layout() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
 
+  // Keep title, description and canonical in step with in-app navigation. The static HTML for each
+  // page is generated at build time with the same strings (build/seo.ts).
   useEffect(() => {
-    document.title = tool ? `${tool.name} · Moazzam’s Toolkit` : 'Moazzam’s Toolkit'
+    document.title = pageTitle(tool)
+    const description = tool?.seoDescription ?? SITE.description
+    document.querySelector('meta[name="description"]')?.setAttribute('content', description)
+    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    if (canonical) canonical.href = canonicalFor(canonical.href, tool?.path)
   }, [tool])
 
   return (

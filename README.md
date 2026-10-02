@@ -15,7 +15,7 @@ Light, dark and system themes are supported. Press <kbd>⌘K</kbd> / <kbd>Ctrl K
 
 ## How to add a new tool
 
-Adding a tool is one registry entry plus a feature folder. Routes, the home grid, the **Tools** menu and the command palette are all generated from the registry.
+Routes, the home index, the **Tools** menu, the command palette and the per-page SEO/link-preview HTML are all generated from the registry.
 
 1. **Create a feature folder** with a default-exported page:
 
@@ -25,27 +25,38 @@ Adding a tool is one registry entry plus a feature folder. Routes, the home grid
      lib/                        # logic + pure helpers (with *.test.ts next to them)
    ```
 
-2. **Register it** in [`src/app/tools.ts`](src/app/tools.ts):
+2. **Describe it** in [`src/app/toolMeta.ts`](src/app/toolMeta.ts) (plain data, also read at build time):
 
    ```ts
    {
-     id: 'my-tool',                       // unique, kebab-case
+     id: 'my-tool',                        // unique, kebab-case; also names og/my-tool.png
      name: 'My Tool',
-     description: 'One sentence for the home card and command palette.',
-     icon: Wrench,                        // any lucide-react icon
-     path: '/my-tool',                    // unique, kebab-case
-     category: 'Developer',               // one of TOOL_CATEGORIES
+     description: 'One sentence for the home index and command palette.',
+     path: '/my-tool',
+     category: 'Developer',                // one of TOOL_CATEGORIES
      keywords: ['extra', 'search', 'terms'],
-     layout: 'narrow',                    // or 'full' to fill the viewport (e.g. editors)
-     component: lazy(() => import('@/features/my-tool/components/MyToolPage')),
+     seoTitle: 'My Tool for Doing X',      // <title> / og:title — keep it short
+     seoDescription: '~150 characters for search results and link previews.',
    },
    ```
 
-   `component` must stay a `lazy()` import, so the tool's dependencies load only on its page. Add a category to `TOOL_CATEGORIES` if none fit.
+3. **Wire up the UI** in [`src/app/tools.ts`](src/app/tools.ts): add `'my-tool': { icon, component: lazy(() => import('@/features/my-tool/components/MyToolPage')) }`. Keep it a `lazy()` import so the tool's dependencies load only on its page.
 
-3. **Build the UI from the shared components** in `src/shared/ui/` (see below): start the page with `<PageHeader toolId="my-tool" …/>` and put content in `<Panel>`s.
+4. **Regenerate the preview cards**: `pnpm generate:images` (writes `public/og/my-tool.png`).
 
-The registry test (`src/app/tools.test.ts`) checks that ids and paths are unique and well-formed.
+Start the page with `<PageHeader toolId="my-tool" …/>` and put content in `<Panel>`s. The registry and SEO tests check that ids and paths are unique and every page gets complete metadata.
+
+## Link previews & SEO
+
+Link-preview scrapers (Slack, iMessage, X, LinkedIn, WhatsApp, Discord) don't run JavaScript, so [`build/seo.ts`](build/seo.ts) writes everything into static HTML at build time:
+
+- the full `<head>` for every page: title, description, canonical URL, Open Graph and Twitter `summary_large_image` tags, JSON-LD (`WebSite` + `ItemList` on home, `WebApplication` per tool), favicon, Apple touch icon and manifest links
+- **a real HTML file per tool** (`dist/markdown/index.html`, …), so a shared tool link previews as that tool and is served with HTTP 200
+- `404.html` (SPA fallback, `noindex`), `robots.txt`, `sitemap.xml`, and `manifest.webmanifest` with one app shortcut per tool
+
+Preview cards (1200×630) and app icons live in `public/og/` and `public/icons/`; they're generated from the brand fonts and tokens with headless Chrome by `pnpm generate:images` and committed. Absolute URLs come from `SITE_URL`, which the Pages workflow sets from the deployment URL.
+
+To check a deployed preview, paste a URL into [opengraph.xyz](https://www.opengraph.xyz) or the [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/). Platforms cache previews, so re-scrape after changing an image.
 
 ## Design system
 
@@ -87,6 +98,7 @@ pnpm install
 | `pnpm test` | Run Vitest in watch mode |
 | `pnpm format` | Format with Prettier |
 | `pnpm check:contrast` | Verify design-token contrast (WCAG AA) |
+| `pnpm generate:images` | Re-render link-preview cards and app icons (needs Chrome) |
 
 Pushes to `main` deploy to GitHub Pages via `.github/workflows/static.yml`.
 
@@ -95,7 +107,8 @@ Pushes to `main` deploy to GitHub Pages via `.github/workflows/static.yml`.
 ```
 src/
   app/
-    tools.ts               # tool registry — routes, nav, home grid and palette come from here
+    toolMeta.ts            # names, paths and SEO copy (plain data, also used at build time)
+    tools.ts               # tool registry — adds icons and lazy pages to toolMeta
     router.tsx             # routes generated from the registry
     Layout.tsx             # floating navbar (Tools menu, ⌘K, theme), page fade, footer
     CommandPalette.tsx
@@ -112,6 +125,11 @@ src/
     logo-mark.svg
   styles/
     tokens.css
+build/
+  seo.ts                 # Vite plugin: meta tags, per-tool pages, sitemap, robots, manifest
 scripts/
   check-contrast.mjs
+  generate-images.mts    # preview cards + app icons
+public/
+  favicon.svg  og/  icons/
 ```

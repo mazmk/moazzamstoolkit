@@ -2,82 +2,55 @@ import { Download, FileText, FileVideo, Video, type LucideIcon } from 'lucide-re
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 
 /**
- * The tool registry. Routes, the home grid, the Tools menu and the command palette are all
- * generated from this list — adding a tool is one entry here plus a feature folder.
+ * The tool registry. Routes, the home index, the Tools menu, the command palette and the
+ * build-time SEO pages are all generated from it. Adding a tool = a toolMeta.ts entry, a UI entry
+ * here, and a feature folder.
  */
 
-export const TOOL_CATEGORIES = ['Video', 'Documents', 'Developer'] as const
-export type ToolCategory = (typeof TOOL_CATEGORIES)[number]
+import { TOOL_CATEGORIES, TOOL_META, type ToolMeta } from './toolMeta'
 
-export interface ToolDefinition {
-  /** Stable, unique identifier (kebab-case). */
-  id: string
-  name: string
-  /** One sentence for the home card and command palette. */
-  description: string
+export { TOOL_CATEGORIES }
+export type { ToolCategory } from './toolMeta'
+
+export interface ToolDefinition extends ToolMeta {
   icon: LucideIcon
-  /** Absolute route path, e.g. "/record". */
-  path: string
-  category: ToolCategory
   /** Lazy so each tool's dependencies load only when its page is opened. */
   component: LazyExoticComponent<ComponentType>
-  /** `narrow` uses the centered 720px column; `full` fills the viewport below the navbar. */
-  layout?: 'narrow' | 'full'
-  /** Extra words the command palette should match on. */
-  keywords?: string[]
 }
 
-export const TOOLS: ToolDefinition[] = [
-  {
-    id: 'screen-recorder',
-    name: 'Screen Recorder',
-    description: 'Record your screen or webcam, with a draggable webcam bubble.',
+/** The React-only half of each tool. Names, paths and copy live in toolMeta.ts. */
+const UI: Record<string, Pick<ToolDefinition, 'icon' | 'component'>> = {
+  'screen-recorder': {
     icon: Video,
-    path: '/record',
-    category: 'Video',
-    keywords: ['capture', 'camera', 'webcam', 'loom'],
     component: lazy(() =>
       import('@/features/recorder/components/RecorderPage').then((m) => ({
         default: m.RecorderPage,
       })),
     ),
   },
-  {
-    id: 'video-downloader',
-    name: 'Video Downloader',
-    description: 'Save Loom videos to your device from a share link.',
+  'video-downloader': {
     icon: Download,
-    path: '/download',
-    category: 'Video',
-    keywords: ['loom', 'jam', 'save'],
     component: lazy(() =>
       import('@/features/downloader/components/DownloaderPage').then((m) => ({
         default: m.DownloaderPage,
       })),
     ),
   },
-  {
-    id: 'webm-to-mp4',
-    name: 'WebM to MP4',
-    description: 'Convert browser recordings to MP4 that plays everywhere.',
+  'webm-to-mp4': {
     icon: FileVideo,
-    path: '/webm-to-mp4',
-    category: 'Video',
-    keywords: ['convert', 'ffmpeg', 'h264', 'transcode'],
     component: lazy(() => import('@/features/webm-to-mp4/components/WebmToMp4Page')),
   },
-  {
-    id: 'markdown-viewer',
-    name: 'Markdown Viewer',
-    description: 'Write markdown with a live preview, then export to HTML or PDF.',
+  'markdown-viewer': {
     icon: FileText,
-    path: '/markdown',
-    category: 'Documents',
-    layout: 'full',
-    keywords: ['md', 'editor', 'preview', 'pdf', 'readme'],
     component: lazy(() => import('@/features/markdown/components/MarkdownPage')),
   },
-]
+}
+
+export const TOOLS: ToolDefinition[] = TOOL_META.map((meta) => {
+  const ui = UI[meta.id]
+  if (!ui) throw new Error(`Tool "${meta.id}" has metadata but no UI entry in tools.ts`)
+  return { ...meta, ...ui }
+})
 
 /** Tools grouped by category, in TOOL_CATEGORIES order, skipping empty categories. */
 export function toolsByCategory(tools: ToolDefinition[] = TOOLS) {

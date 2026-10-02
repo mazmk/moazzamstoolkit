@@ -69,3 +69,15 @@ describe('command palette filtering', () => {
     expect(filterEntries(entries, 'zzz')).toHaveLength(0)
   })
 })
+
+describe('canonicalFor', () => {
+  const root = 'https://mazmk.github.io/screennest/'
+
+  it('moves between home and tool pages without eating the base path', async () => {
+    const { canonicalFor } = await import('./Layout')
+    expect(canonicalFor(root, '/markdown')).toBe(`${root}markdown/`)
+    expect(canonicalFor(`${root}markdown/`)).toBe(root)
+    expect(canonicalFor(`${root}markdown/`, '/record')).toBe(`${root}record/`)
+    expect(canonicalFor(root)).toBe(root)
+  })
+})
