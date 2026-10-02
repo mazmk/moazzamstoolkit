@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import { SITE, TOOL_META } from '../src/app/toolMeta.ts'
 import {
+  AI_AGENTS,
   escapeAttr,
   homePage,
   renderHead,
+  renderLlmsFullTxt,
+  renderLlmsTxt,
   renderManifest,
   renderRobots,
   renderSitemap,
@@ -103,5 +106,42 @@ describe('sitemap, robots and manifest', () => {
     expect(m.icons.some((i) => i.purpose === 'maskable')).toBe(true)
     expect(m.icons.some((i) => i.sizes === '512x512' && i.purpose === 'any')).toBe(true)
     expect(m.shortcuts.map((s) => s.url)).toEqual(TOOL_META.map((t) => `${t.path.slice(1)}/`))
+  })
+})
+
+describe('AI crawler files', () => {
+  it('allows everyone, names the major AI crawlers, and links the llms files and sitemap', () => {
+    const robots = renderRobots(SITE_URL)
+    expect(robots).toMatch(/^User-agent: \*\nAllow: \/$/m)
+    for (const agent of AI_AGENTS) expect(robots).toContain(`User-agent: ${agent}\n`)
+    expect(robots).not.toMatch(/Disallow/)
+    expect(robots).toContain(`${SITE_URL}/llms.txt`)
+    expect(robots).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`)
+  })
+
+  it('writes llms.txt in the llmstxt.org shape: H1, blockquote summary, linked tool list', () => {
+    const txt = renderLlmsTxt(SITE_URL)
+    const lines = txt.split('\n')
+    expect(lines[0]).toBe(`# ${SITE.name}`)
+    expect(lines[2]).toBe(`> ${SITE.description}`)
+    expect(txt).toContain('## Tools')
+    for (const t of TOOL_META) expect(txt).toContain(`- [${t.name}](${SITE_URL}${t.path}/): `)
+    expect(txt).toContain(`(${SITE_URL}/llms-full.txt)`)
+  })
+
+  it('writes every tool’s capabilities and limits into llms-full.txt', () => {
+    const full = renderLlmsFullTxt(SITE_URL)
+    for (const t of TOOL_META) {
+      expect(full).toContain(`## ${t.name}`)
+      expect(t.capabilities.length).toBeGreaterThan(0)
+      expect(t.limits.length).toBeGreaterThan(0)
+      for (const line of [...t.capabilities, ...t.limits]) expect(full).toContain(`- ${line}`)
+    }
+  })
+
+  it('advertises llms.txt and the sitemap from every page head', () => {
+    const head = renderHead(homePage(), SITE_URL, BASE)
+    expect(head).toContain(`href="${BASE}llms.txt"`)
+    expect(head).toContain(`href="${BASE}sitemap.xml"`)
   })
 })

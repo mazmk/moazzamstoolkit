@@ -52,7 +52,8 @@ Link-preview scrapers (Slack, iMessage, X, LinkedIn, WhatsApp, Discord) don't ru
 
 - the full `<head>` for every page: title, description, canonical URL, Open Graph and Twitter `summary_large_image` tags, JSON-LD (`WebSite` + `ItemList` on home, `WebApplication` per tool), favicon, Apple touch icon and manifest links
 - **a real HTML file per tool** (`dist/markdown/index.html`, …), so a shared tool link previews as that tool and is served with HTTP 200
-- `404.html` (SPA fallback, `noindex`), `robots.txt`, `sitemap.xml`, and `manifest.webmanifest` with one app shortcut per tool
+- `404.html` (SPA fallback, `noindex`), `sitemap.xml`, and `manifest.webmanifest` with one app shortcut per tool
+- for AI crawlers and agents: `robots.txt` (allows everyone and names the major AI crawlers), [`llms.txt`](https://llmstxt.org) (a short Markdown map of the tools) and `llms-full.txt` (each tool's capabilities and limits, from the `capabilities` / `limits` fields in `toolMeta.ts`)
 
 Preview cards (1200×630) and app icons live in `public/og/` and `public/icons/`; they're generated from the brand fonts and tokens with headless Chrome by `pnpm generate:images` and committed. Absolute URLs come from `SITE_URL`, which the Pages workflow sets from the deployment URL.
 
@@ -77,6 +78,10 @@ To check a deployed preview, paste a URL into [opengraph.xyz](https://www.opengr
 - **mediabunny**, **idb-keyval**, **fix-webm-duration**
 - **lucide-react** icons (1.5px stroke) · **Instrument Serif, Geist, JetBrains Mono** via Fontsource (self-hosted)
 - **Vitest + React Testing Library**
+
+## Contributing
+
+Coding conventions, the design-system rules and the checklist for adding a tool (including its SEO and AI-crawler metadata) are in [`AGENTS.md`](AGENTS.md). `CLAUDE.md` imports it for Claude Code.
 
 ## Setup
 

@@ -7,7 +7,8 @@
  *     into index.html at the `<!-- seo -->` marker
  *   - writes dist/<tool>/index.html per tool with that tool's title, description and preview card,
  *     so a shared /markdown link previews as the Markdown Viewer (and is served with HTTP 200)
- *   - writes 404.html (SPA fallback, noindex), robots.txt, sitemap.xml and manifest.webmanifest
+ *   - writes 404.html (SPA fallback, noindex), robots.txt (AI crawlers named explicitly),
+ *     llms.txt + llms-full.txt (llmstxt.org), sitemap.xml and manifest.webmanifest
  *
  * Absolute URLs come from SITE_URL (set by the Pages workflow), falling back to the default below.
  */
@@ -133,6 +134,8 @@ export function renderHead(page: PageMeta, siteUrl: string, base: string): strin
     `<link rel="icon" href="${base}icons/favicon-32.png" type="image/png" sizes="32x32" />`,
     `<link rel="apple-touch-icon" href="${base}icons/apple-touch-icon.png" />`,
     `<link rel="manifest" href="${base}manifest.webmanifest" />`,
+    `<link rel="sitemap" type="application/xml" href="${base}sitemap.xml" />`,
+    `<link rel="alternate" type="text/markdown" title="Summary for language models" href="${base}llms.txt" />`,
     // Open Graph — Facebook, LinkedIn, Slack, iMessage, WhatsApp, Discord
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="${a(SITE.name)}" />`,
@@ -168,8 +171,109 @@ export function renderSitemap(siteUrl: string, lastmod: string): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`
 }
 
+/**
+ * AI crawlers and agents, by user-agent token. Everything is allowed for everyone anyway; naming
+ * them makes that explicit for crawlers that only read their own group.
+ */
+export const AI_AGENTS = [
+  'GPTBot', // OpenAI training
+  'OAI-SearchBot', // ChatGPT search
+  'ChatGPT-User', // ChatGPT browsing on a user's behalf
+  'ClaudeBot', // Anthropic training
+  'Claude-SearchBot', // Claude search
+  'Claude-User', // Claude browsing on a user's behalf
+  'PerplexityBot',
+  'Perplexity-User',
+  'Google-Extended', // Gemini / Vertex AI
+  'Applebot-Extended', // Apple Intelligence
+  'Meta-ExternalAgent',
+  'Amazonbot',
+  'DuckAssistBot',
+  'MistralAI-User',
+  'CCBot', // Common Crawl, used by many open models
+]
+
 export const renderRobots = (siteUrl: string) =>
-  `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`
+  [
+    `# ${SITE.name} — every page is public. Search engines, AI crawlers and agents are welcome.`,
+    `# Summary for language models: ${siteUrl}/llms.txt`,
+    `# Full reference for language models: ${siteUrl}/llms-full.txt`,
+    '',
+    'User-agent: *',
+    'Allow: /',
+    '',
+    ...AI_AGENTS.map((agent) => `User-agent: ${agent}`),
+    'Allow: /',
+    '',
+    `Sitemap: ${siteUrl}/sitemap.xml`,
+    '',
+  ].join('\n')
+
+const PRIVACY =
+  'Every tool runs entirely in the browser. Files, recordings and documents are processed on the user’s device and never uploaded; there are no accounts, no sign-up and no cost.'
+
+/** llms.txt (llmstxt.org): a short Markdown map of the site for language models. */
+export function renderLlmsTxt(siteUrl: string): string {
+  const tools = TOOL_META.map(
+    (t) => `- [${t.name}](${siteUrl}/${toolPage(t).path}): ${t.seoDescription}`,
+  )
+  return [
+    `# ${SITE.name}`,
+    '',
+    `> ${SITE.description}`,
+    '',
+    `${PRIVACY} It needs a modern browser with JavaScript; screen recording needs a desktop browser.`,
+    '',
+    '## Tools',
+    '',
+    ...tools,
+    '',
+    '## Optional',
+    '',
+    `- [Full reference](${siteUrl}/llms-full.txt): what each tool does, how, and its limits`,
+    `- [Sitemap](${siteUrl}/sitemap.xml)`,
+    '',
+  ].join('\n')
+}
+
+/** llms-full.txt: everything an AI assistant needs to answer questions about the tools accurately. */
+export function renderLlmsFullTxt(siteUrl: string): string {
+  const sections = TOOL_META.map((t) =>
+    [
+      `## ${t.name}`,
+      '',
+      `URL: ${siteUrl}/${toolPage(t).path}`,
+      `Category: ${t.category}`,
+      '',
+      t.seoDescription,
+      '',
+      '### What it does',
+      '',
+      ...t.capabilities.map((c) => `- ${c}`),
+      '',
+      '### Limits',
+      '',
+      ...t.limits.map((l) => `- ${l}`),
+      '',
+    ].join('\n'),
+  )
+  return [
+    `# ${SITE.name} — full reference`,
+    '',
+    `> ${SITE.description}`,
+    '',
+    `Home: ${siteUrl}/`,
+    `Author: ${SITE.author}`,
+    '',
+    '## Privacy and requirements',
+    '',
+    `- ${PRIVACY}`,
+    '- Needs a modern browser with JavaScript. Screen recording needs a desktop browser.',
+    '- Nothing to install. Tools can be opened directly by URL and installed as an app (PWA).',
+    '',
+    ...sections,
+  ].join('\n')
+}
 
 /** PWA manifest with one app shortcut per tool. URLs are relative to the manifest's location. */
 export function renderManifest() {
@@ -232,7 +336,19 @@ export function seo(): Plugin {
     // Serve the generated manifest in dev too.
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        if (req.url?.split('?')[0]?.endsWith('/manifest.webmanifest')) {
+        const path = req.url?.split('?')[0] ?? ''
+        const text: Record<string, () => string> = {
+          '/robots.txt': () => renderRobots(siteUrl),
+          '/llms.txt': () => renderLlmsTxt(siteUrl),
+          '/llms-full.txt': () => renderLlmsFullTxt(siteUrl),
+        }
+        const file = Object.keys(text).find((f) => path.endsWith(f))
+        if (file) {
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+          res.end(text[file]!())
+          return
+        }
+        if (path.endsWith('/manifest.webmanifest')) {
           res.setHeader('Content-Type', 'application/manifest+json')
           res.end(JSON.stringify(renderManifest(), null, 2))
           return
@@ -247,6 +363,12 @@ export function seo(): Plugin {
         source: JSON.stringify(renderManifest(), null, 2),
       })
       this.emitFile({ type: 'asset', fileName: 'robots.txt', source: renderRobots(siteUrl) })
+      this.emitFile({ type: 'asset', fileName: 'llms.txt', source: renderLlmsTxt(siteUrl) })
+      this.emitFile({
+        type: 'asset',
+        fileName: 'llms-full.txt',
+        source: renderLlmsFullTxt(siteUrl),
+      })
       this.emitFile({
         type: 'asset',
         fileName: 'sitemap.xml',
