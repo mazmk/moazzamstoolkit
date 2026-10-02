@@ -6,6 +6,11 @@ import {
   set as idbSet,
 } from 'idb-keyval'
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+import type { OverlaySettings } from './lib/overlay'
+
+export type RecordingMode = 'screen' | 'camera'
 
 export interface SavedRecording {
   id: string
@@ -47,3 +52,29 @@ export const useRecorderStore = create<RecorderStore>((set) => ({
     set((state) => ({ recordings: state.recordings.filter((r) => r.id !== id) }))
   },
 }))
+
+interface RecorderSettings {
+  mode: RecordingMode
+  micEnabled: boolean
+  overlay: OverlaySettings
+  setMode: (mode: RecordingMode) => void
+  setMicEnabled: (enabled: boolean) => void
+  setOverlay: (patch: Partial<OverlaySettings>) => void
+}
+
+export const useRecorderSettings = create<RecorderSettings>()(
+  persist(
+    (set) => ({
+      mode: 'screen',
+      micEnabled: true,
+      overlay: { visible: true, x: 1, y: 1, size: 'md' },
+      setMode: (mode) => set({ mode }),
+      setMicEnabled: (micEnabled) => set({ micEnabled }),
+      setOverlay: (patch) => set((state) => ({ overlay: { ...state.overlay, ...patch } })),
+    }),
+    {
+      name: 'screennest:recorder-settings',
+      partialize: ({ mode, micEnabled, overlay }) => ({ mode, micEnabled, overlay }),
+    },
+  ),
+)
