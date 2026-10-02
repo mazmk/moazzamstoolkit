@@ -1,149 +1,149 @@
 @import 'tailwindcss';
+@import '@fontsource/instrument-serif';
 @import '@fontsource-variable/geist';
-@import '@fontsource-variable/geist-mono';
+@import '@fontsource-variable/jetbrains-mono';
 @import './styles/tokens.css';
-@import './styles/glass.css';
 
 /* Dark mode follows the `.dark` class on <html>, set from the user's theme choice (see shared/theme). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Expose tokens as Tailwind utilities (text-fg, rounded-card, font-mono, ease-spring…).
-   Gradients and glass surfaces use the CSS variables / glass utilities directly. */
+/* Tokens → Tailwind utilities. Source tokens have different names, so nothing resolves to itself.
+   `--bg` is exposed as `paper` (bg-paper reads better than bg-bg). */
 @theme inline {
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --radius-card: var(--radius-card);
-  --radius-frame: var(--radius-frame);
-  --color-fg: var(--fg);
-  --color-fg-muted: var(--fg-muted);
-  --color-fg-subtle: var(--fg-subtle);
-  --color-accent: var(--accent-from);
-  --color-accent-to: var(--accent-to);
-  --color-accent-fg: var(--accent-fg);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-code);
+
+  --radius-control: var(--control-radius);
+  --radius-panel: var(--panel-radius);
+
+  --color-paper: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
   --color-accent-text: var(--accent-text);
-  --color-focus: var(--focus-ring);
+  --color-accent-tint: var(--accent-tint);
   --color-danger: var(--danger);
-  --color-danger-solid: var(--danger-solid);
+  --color-danger-tint: var(--danger-tint);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-recording: var(--recording);
-  --color-inset: var(--glass-bg-inset);
-  --color-inset-hover: var(--glass-bg-inset-hover);
-  --ease-spring: var(--ease-spring);
-  --ease-out: var(--ease-out);
+  --color-scrim: var(--scrim);
+
+  --ease-out: var(--ease);
 }
 
 @layer base {
   html {
-    font-family: var(--font-sans);
+    font-family: var(--font-ui);
+    /* The sticky navbar floats over content; keep anchors and focused elements clear of it. */
+    scroll-padding-top: 6rem;
   }
 
   body {
     min-height: 100dvh;
-    background-color: var(--bg-base);
-    color: var(--fg);
+    background-color: var(--bg);
+    color: var(--ink);
     -webkit-font-smoothing: antialiased;
   }
 
-  /* One clearly visible focus treatment everywhere, including on glass. */
+  /* One clearly visible focus treatment everywhere: 2px accent ring, 2px offset. */
   :focus-visible {
-    outline: 2px solid var(--focus-ring);
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 
-  /* lucide-react icons render at 1.5px stroke app-wide; CSS overrides the SVG attribute. */
+  ::selection {
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+
   .lucide {
     stroke-width: 1.5;
   }
 }
 
-/* Ambient background ---------------------------------------------------------------------------- */
+/* Materials ----------------------------------------------------------------------------------- */
 
-@keyframes drift-1 {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(12vw, 8vh, 0) scale(1.15);
-  }
+/* Every page surface: solid, hairline border, no blur, no shadow. */
+@utility panel {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
 }
-@keyframes drift-2 {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1.1);
-  }
-  50% {
-    transform: translate3d(-10vw, 12vh, 0) scale(0.95);
-  }
+
+/*
+ * Restrained glass, ONLY for things that float above content: navbar, command palette, dropdowns,
+ * recorder control bar, toasts. Tune per use with --float-mix (surface alpha) and --float-blur.
+ * Prefixed backdrop-filter first: Lightning CSS drops a standard declaration followed by a prefixed one.
+ */
+@utility glass-float {
+  background-color: var(--float-bg);
+  -webkit-backdrop-filter: blur(var(--float-blur)) saturate(120%);
+  backdrop-filter: blur(var(--float-blur)) saturate(120%);
+  border: 1px solid var(--line);
 }
-@keyframes drift-3 {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(8vw, -10vh, 0) scale(1.2);
-  }
-}
-@keyframes drift-4 {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1.05);
-  }
-  50% {
-    transform: translate3d(-12vw, -6vh, 0) scale(0.9);
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-float {
+    background-color: var(--surface);
   }
 }
 
-/* Blobs are radial gradients rather than filter: blur(), which keeps them cheap to animate and
-   doesn't count against the "≤3 blurred layers" budget. */
-.ambient-blob {
-  position: absolute;
-  border-radius: 9999px;
-  opacity: var(--blob-opacity);
-  will-change: transform;
-}
-
-/* One-shot animations ------------------------------------------------------------------------------ */
-
-@keyframes countdown-pop {
-  0% {
-    opacity: 0;
-    transform: scale(1.6);
-  }
-  25% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  80% {
-    opacity: 1;
-    transform: scale(0.96);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.8);
+@media (prefers-reduced-transparency: reduce) {
+  .glass-float {
+    background-color: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 
-@keyframes toast-in {
+/* Motion -------------------------------------------------------------------------------------- */
+
+@keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(8px);
   }
 }
 
-@keyframes recording-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgb(239 68 68 / 0.55);
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
+}
+
+@keyframes countdown-tick {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  15%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes recording-blink {
   50% {
-    box-shadow: 0 0 0 8px rgb(239 68 68 / 0);
+    opacity: 0.35;
+  }
+}
+
+@keyframes progress-indeterminate {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
   }
 }
 
@@ -155,9 +155,8 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .ambient-blob,
   .countdown-number {
-    /* countdown-pop ends at opacity 0, so shortening it would hide the number entirely. */
+    /* countdown-tick ends at opacity 0, so shortening it would hide the number entirely. */
     animation: none !important;
   }
 }

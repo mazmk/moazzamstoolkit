@@ -2,9 +2,9 @@ import { Camera, Circle, Eye, EyeOff, Loader2, Mic, MicOff, Monitor } from 'luci
 import { useCallback, useEffect, useState } from 'react'
 
 import { Chip } from '@/shared/ui/Chip'
-import { GlassButton } from '@/shared/ui/GlassButton'
-import { GlassCard } from '@/shared/ui/GlassCard'
-import { GlassPill } from '@/shared/ui/GlassPill'
+import { Button } from '@/shared/ui/Button'
+import { Panel } from '@/shared/ui/Panel'
+import { PageHeader } from '@/shared/ui/PageHeader'
 import { InlineError } from '@/shared/ui/InlineError'
 import { Segmented } from '@/shared/ui/Segmented'
 import { toast } from '@/shared/ui/Toast'
@@ -121,20 +121,19 @@ export function RecorderPage() {
 
   return (
     <div>
-      <div className="text-center">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Screen Recorder</h1>
-        <p className="mt-3 text-fg-muted">Record your screen or webcam right in the browser.</p>
-      </div>
+      <PageHeader
+        toolId="screen-recorder"
+        title="Screen Recorder"
+        description="Record your screen or webcam right in the browser. Recordings stay on this device."
+      />
 
       {!screenSupported && permissions.ready && (
-        <div className="mt-6 flex justify-center">
-          <GlassPill size="md" className="text-center">
-            Screen recording needs a desktop browser — webcam works here.
-          </GlassPill>
-        </div>
+        <p className="mb-4 font-mono text-xs text-muted">
+          Screen recording needs a desktop browser — webcam works here.
+        </p>
       )}
 
-      <GlassCard className="mt-8 p-4 sm:p-6">
+      <Panel className="p-4 sm:p-6">
         {!permissions.ready || !permissions.stream ? (
           <PermissionGate
             camera={permissions.camera}
@@ -190,7 +189,7 @@ export function RecorderPage() {
                   onStop={stop}
                 />
               ) : (
-                <GlassButton
+                <Button
                   variant="primary"
                   size="xl"
                   onClick={beginRecording}
@@ -202,10 +201,10 @@ export function RecorderPage() {
                       <Circle size={18} fill="currentColor" />
                     )
                   }
-                  className="w-full max-w-xs hover:shadow-[0_14px_50px_-6px_rgb(124_58_237/0.7),0_6px_18px_-4px_rgb(37_99_235/0.5)] sm:w-auto"
+                  className="w-full max-w-xs sm:w-auto"
                 >
                   {startLabel}
-                </GlassButton>
+                </Button>
               )}
 
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -241,7 +240,7 @@ export function RecorderPage() {
               </div>
 
               {mode === 'screen' && !isActive && (
-                <p className="text-xs text-fg-subtle">Drag the webcam bubble to position it.</p>
+                <p className="text-xs text-muted">Drag the webcam bubble to position it.</p>
               )}
 
               {status === 'error' && error && (
@@ -250,7 +249,7 @@ export function RecorderPage() {
             </div>
           </div>
         )}
-      </GlassCard>
+      </Panel>
 
       <RecordingsList onOpen={openPreview} />
 

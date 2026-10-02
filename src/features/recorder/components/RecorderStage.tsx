@@ -77,7 +77,7 @@ export function RecorderStage({
     <div
       ref={stageRef}
       style={{ aspectRatio: aspect }}
-      className="relative w-full overflow-hidden rounded-frame bg-black/[0.04] shadow-[inset_0_0_0_1px_var(--glass-border-bottom)] dark:bg-black/35"
+      className="relative w-full overflow-hidden rounded-control border border-line bg-surface-2"
     >
       {mode === 'camera' ? (
         <StreamVideo stream={camera} mirrored className="h-full w-full object-cover" />
@@ -85,10 +85,10 @@ export function RecorderStage({
         <StreamVideo stream={screen} className="h-full w-full object-contain" />
       ) : (
         <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-          <span className="glass-inset grid size-12 place-items-center text-fg-muted">
+          <span className="text-muted">
             <Monitor size={22} />
           </span>
-          <p className="max-w-56 text-sm text-fg-muted">
+          <p className="max-w-56 text-sm text-muted">
             Your screen appears here once you start recording
           </p>
         </div>
@@ -107,7 +107,7 @@ export function RecorderStage({
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
           style={{ left: bubble.left, top: bubble.top, width: bubble.size, height: bubble.size }}
-          className="absolute cursor-grab touch-none overflow-hidden rounded-full shadow-[0_12px_32px_-8px_rgb(0_0_0/0.5)] ring-2 ring-white/85 transition-shadow duration-200 select-none hover:ring-white active:cursor-grabbing"
+          className="absolute cursor-grab touch-none overflow-hidden rounded-full ring-2 ring-white/90 transition-shadow duration-150 select-none hover:ring-white active:cursor-grabbing"
         >
           <StreamVideo
             stream={camera}

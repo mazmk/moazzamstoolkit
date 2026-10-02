@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { formatDuration } from '@/shared/lib/format'
-import { GlassButton } from '@/shared/ui/GlassButton'
-import { InsideGlassContext } from '@/shared/ui/glassContext'
+import { Button } from '@/shared/ui/Button'
 
 interface RecordingSessionProps {
   showWebcamToggle: boolean
@@ -28,7 +27,7 @@ function RecordingDot() {
   return (
     <span
       aria-hidden
-      className="size-2.5 shrink-0 rounded-full bg-recording motion-safe:animate-[recording-pulse_1.6s_ease-in-out_infinite]"
+      className="size-2.5 shrink-0 rounded-full bg-recording motion-safe:animate-[recording-blink_1.2s_steps(2,jump-none)_infinite]"
     />
   )
 }
@@ -49,14 +48,14 @@ export function RecordingSession({
   return (
     <>
       <div className="flex flex-col items-center gap-1">
-        <span className="flex items-center gap-2 text-sm font-medium text-danger">
+        <span className="flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-danger uppercase">
           <RecordingDot />
           Recording
         </span>
         <span
           role="timer"
           aria-label={`Elapsed ${time}`}
-          className="font-mono text-6xl font-medium tracking-tight tabular-nums sm:text-7xl"
+          className="font-mono text-6xl font-light tracking-tight tabular-nums sm:text-7xl"
         >
           {time}
         </span>
@@ -67,32 +66,30 @@ export function RecordingSession({
           <div
             role="toolbar"
             aria-label="Recording controls"
-            className="glass-strong pointer-events-auto flex items-center gap-1.5 rounded-full p-1.5 pl-4 motion-safe:animate-[toast-in_300ms_var(--ease-spring)]"
+            className="pointer-events-auto flex items-center gap-1.5 rounded-full glass-float p-1.5 pl-4 [--float-blur:28px] [--float-mix:86%] motion-safe:animate-[pop-in_150ms_var(--ease)]"
           >
-            <InsideGlassContext value>
-              <RecordingDot />
-              <span aria-hidden className="mr-2 ml-1 font-mono text-sm tabular-nums">
-                {time}
-              </span>
-              {showWebcamToggle && (
-                <GlassButton
-                  variant="ghost"
-                  size="icon"
-                  aria-label={webcamVisible ? 'Hide webcam' : 'Show webcam'}
-                  aria-pressed={webcamVisible}
-                  title={webcamVisible ? 'Hide webcam' : 'Show webcam'}
-                  onClick={onToggleWebcam}
-                  icon={webcamVisible ? <Eye size={18} /> : <EyeOff size={18} />}
-                />
-              )}
-              <GlassButton
-                variant="danger"
-                onClick={onStop}
-                icon={<Square size={14} fill="currentColor" />}
-              >
-                Stop
-              </GlassButton>
-            </InsideGlassContext>
+            <RecordingDot />
+            <span aria-hidden className="mr-2 ml-1 font-mono text-sm tabular-nums">
+              {time}
+            </span>
+            {showWebcamToggle && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={webcamVisible ? 'Hide webcam' : 'Show webcam'}
+                aria-pressed={webcamVisible}
+                title={webcamVisible ? 'Hide webcam' : 'Show webcam'}
+                onClick={onToggleWebcam}
+                icon={webcamVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+              />
+            )}
+            <Button
+              variant="danger"
+              onClick={onStop}
+              icon={<Square size={14} fill="currentColor" />}
+            >
+              Stop
+            </Button>
           </div>
         </div>,
         document.body,

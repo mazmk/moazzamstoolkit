@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Moazzam's Toolkit">
+  <title>Moazzam's Toolkit</title>
+  <!-- Rounded hex nut with the M knocked out, so it works on any background -->
+  <path fill="#E8451E" fill-rule="evenodd" d="M26.8 7Q32 4 37.2 7L51.05 15Q56.25 18 56.25 24L56.25 40Q56.25 46 51.05 49L37.2 57Q32 60 26.8 57L12.95 49Q7.75 46 7.75 40L7.75 24Q7.75 18 12.95 15ZM20 43V22H25.5L32 29.5L38.5 22H44V43H38.5V30.39L32 37.89L25.5 30.39V43Z"/>
+</svg>

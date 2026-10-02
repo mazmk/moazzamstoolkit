@@ -32,7 +32,7 @@ export function toast(message: string, tone: ToastTone = 'info') {
 }
 
 const ICONS = { info: Info, success: CheckCircle2, error: AlertCircle }
-const ICON_COLOR = { info: 'text-accent-text', success: 'text-success', error: 'text-danger' }
+const ICON_COLOR = { info: 'text-muted', success: 'text-success', error: 'text-danger' }
 const DURATION_MS = 4000
 
 function ToastView({ item }: { item: ToastItem }) {
@@ -45,14 +45,14 @@ function ToastView({ item }: { item: ToastItem }) {
   }, [dismiss, item.id])
 
   return (
-    <li className="glass-strong pointer-events-auto flex w-full items-center gap-3 rounded-full py-2 pr-2 pl-4 text-sm text-fg motion-safe:animate-[toast-in_300ms_var(--ease-spring)]">
-      <Icon size={18} className={`shrink-0 ${ICON_COLOR[item.tone]}`} aria-hidden />
+    <li className="pointer-events-auto flex w-full items-center gap-2.5 rounded-control glass-float py-2 pr-1.5 pl-3 text-[13px] text-ink [--float-mix:92%] motion-safe:animate-[pop-in_150ms_var(--ease)]">
+      <Icon size={16} className={`shrink-0 ${ICON_COLOR[item.tone]}`} aria-hidden />
       <span className="min-w-0 flex-1">{item.message}</span>
       <button
         type="button"
         onClick={() => dismiss(item.id)}
         aria-label="Dismiss notification"
-        className="grid size-7 shrink-0 place-items-center rounded-full text-fg-subtle transition-colors hover:bg-inset-hover hover:text-fg"
+        className="grid size-7 shrink-0 place-items-center rounded-[8px] text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-ink"
       >
         <X size={14} />
       </button>
@@ -60,15 +60,15 @@ function ToastView({ item }: { item: ToastItem }) {
   )
 }
 
-/** Mount once near the app root. Toasts appear top-center, clear of the bottom recording controls. */
+/** Mount once near the app root. Toasts stack bottom-right (above the recorder bar on phones). */
 export function Toaster() {
   const toasts = useToastStore((s) => s.toasts)
   return (
     <div
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 top-20 z-50 flex justify-center px-4 sm:top-24"
+      className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-end px-4 sm:right-4 sm:bottom-4 sm:left-auto"
     >
-      <ol className="flex w-full max-w-sm flex-col gap-2">
+      <ol className="flex w-full max-w-xs flex-col gap-2">
         {toasts.map((t) => (
           <ToastView key={t.id} item={t} />
         ))}

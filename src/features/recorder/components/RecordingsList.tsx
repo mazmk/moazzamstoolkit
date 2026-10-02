@@ -3,15 +3,15 @@ import { useEffect, useState } from 'react'
 
 import { useObjectUrlRef } from '@/shared/hooks/useObjectUrl'
 import { formatBytes, formatDuration } from '@/shared/lib/format'
-import { GlassCard } from '@/shared/ui/GlassCard'
-import { GlassPill } from '@/shared/ui/GlassPill'
+import { Panel } from '@/shared/ui/Panel'
+import { Tag } from '@/shared/ui/Tag'
 
 import { downloadRecording } from '../lib/recordingFile'
 import { useRecorderStore, type SavedRecording } from '../store'
 import { DeleteRecordingDialog } from './DeleteRecordingDialog'
 
 const tileAction =
-  'grid size-8 place-items-center rounded-full bg-black/60 text-white transition-[transform,background-color] duration-200 ease-spring hover:bg-black/80 active:scale-[0.97]'
+  'grid size-8 place-items-center rounded-[8px] bg-black/65 text-white transition-[transform,background-color] duration-150 ease-out hover:bg-black/80 active:translate-y-px'
 
 function RecordingTile({
   recording,
@@ -26,12 +26,12 @@ function RecordingTile({
   const thumbRef = useObjectUrlRef<HTMLVideoElement>(recording.blob, '#t=0.1')
 
   return (
-    <li className="group glass-inset relative p-1.5 [--pill-radius:20px]">
+    <li className="group relative rounded-control border border-line p-1.5 transition-colors duration-150 ease-out hover:bg-surface-2">
       <button
         type="button"
         onClick={onOpen}
         aria-label={`Play ${recording.name}`}
-        className="relative block w-full overflow-hidden rounded-[14px]"
+        className="relative block w-full overflow-hidden rounded-[7px]"
       >
         <video
           ref={thumbRef}
@@ -42,7 +42,7 @@ function RecordingTile({
           aria-hidden
           className="pointer-events-none aspect-video w-full bg-black/40 object-cover"
         />
-        <span className="absolute inset-0 grid place-items-center opacity-0 transition duration-200 group-hover:bg-black/25 group-hover:opacity-100">
+        <span className="absolute inset-0 grid place-items-center opacity-0 transition duration-150 group-hover:bg-black/25 group-hover:opacity-100">
           <Play size={28} className="text-white drop-shadow" fill="currentColor" />
         </span>
         <span className="absolute right-1.5 bottom-1.5 rounded-full bg-black/65 px-2 py-0.5 font-mono text-[11px] text-white tabular-nums">
@@ -54,13 +54,11 @@ function RecordingTile({
         <p className="truncate text-sm font-medium" title={recording.name}>
           {recording.name}
         </p>
-        <p className="font-mono text-xs text-fg-subtle tabular-nums">
-          {formatBytes(recording.size)}
-        </p>
+        <p className="font-mono text-xs text-muted tabular-nums">{formatBytes(recording.size)}</p>
       </div>
 
       {/* Hover actions; always visible on touch screens and when focused via keyboard. */}
-      <div className="absolute top-3 right-3 flex gap-1 opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100">
+      <div className="absolute top-3 right-3 flex gap-1 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100">
         <button
           type="button"
           onClick={() => downloadRecording(recording)}
@@ -92,25 +90,28 @@ export function RecordingsList({ onOpen }: { onOpen?: (id: string) => void }) {
   }, [loadRecordings])
 
   return (
-    <GlassCard as="section" aria-labelledby="recent-recordings" className="mt-6 p-4 sm:p-6">
+    <Panel as="section" aria-labelledby="recent-recordings" className="mt-6 p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3 px-1">
-        <h2 id="recent-recordings" className="text-base font-semibold tracking-tight">
+        <h2
+          id="recent-recordings"
+          className="font-mono text-[11px] tracking-[0.06em] text-ink uppercase"
+        >
           Recent recordings
         </h2>
         {recordings.length > 0 && (
-          <GlassPill mono aria-label={`${recordings.length} recordings`}>
+          <Tag mono aria-label={`${recordings.length} recordings`}>
             {recordings.length}
-          </GlassPill>
+          </Tag>
         )}
       </div>
 
       {recordings.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-8 text-center">
-          <span className="glass-inset grid size-11 place-items-center text-fg-muted">
+          <span className="text-muted">
             <Film size={20} />
           </span>
-          <p className="text-sm text-fg-muted">No recordings yet.</p>
-          <p className="text-xs text-fg-subtle">They’ll appear here, saved only in this browser.</p>
+          <p className="text-sm text-muted">No recordings yet.</p>
+          <p className="text-xs text-muted">They’ll appear here, saved only in this browser.</p>
         </div>
       ) : (
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -126,6 +127,6 @@ export function RecordingsList({ onOpen }: { onOpen?: (id: string) => void }) {
       )}
 
       <DeleteRecordingDialog recording={pendingDelete} onClose={() => setPendingDelete(null)} />
-    </GlassCard>
+    </Panel>
   )
 }

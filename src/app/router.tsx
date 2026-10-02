@@ -1,17 +1,20 @@
 import { createBrowserRouter } from 'react-router-dom'
 
+import { HomePage } from '@/features/home/HomePage'
+import { NotFoundPage } from '@/features/home/NotFoundPage'
+
 import { Layout } from './Layout'
-import { DownloaderPage } from '@/features/downloader/components/DownloaderPage'
-import { RecorderPage } from '@/features/recorder/components/RecorderPage'
+import { TOOLS } from './tools'
 
 export const router = createBrowserRouter(
   [
     {
       element: <Layout />,
       children: [
-        { path: '/record', element: <RecorderPage /> },
-        { path: '/download', element: <DownloaderPage /> },
-        { index: true, element: <RecorderPage /> },
+        { index: true, element: <HomePage /> },
+        // Every tool route comes from the registry; Layout wraps them in <Suspense>.
+        ...TOOLS.map(({ path, component: Page }) => ({ path, element: <Page /> })),
+        { path: '*', element: <NotFoundPage /> },
       ],
     },
   ],

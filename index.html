@@ -3,12 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <title>ScreenNest</title>
+    <title>Moazzam's Toolkit</title>
+    <meta
+      name="description"
+      content="Small tools for annoying jobs. Everything runs in your browser."
+    />
+    <meta name="application-name" content="Moazzam's Toolkit" />
+    <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Moazzam's Toolkit" />
+    <meta
+      property="og:description"
+      content="Small tools for annoying jobs. Everything runs in your browser."
+    />
     <script>
       // Apply the saved theme before first paint to avoid a flash of the wrong theme.
-      // Mirrors useApplyTheme in src/shared/theme/theme.ts.
+      // Mirrors useApplyTheme in src/shared/theme/theme.ts. The storage key keeps its original
+      // 'screennest:' prefix so existing users' saved theme survives the rename.
       ;(function () {
         var theme = 'system'
         try {

@@ -21,6 +21,7 @@ export interface SavedRecording {
   size: number // bytes
 }
 
+// Storage names predate the rename to Moazzam's Toolkit; renaming them would orphan saved recordings.
 const idb = createIdbStore('screennest', 'recordings')
 
 interface RecorderStore {

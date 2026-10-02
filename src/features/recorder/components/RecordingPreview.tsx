@@ -2,8 +2,8 @@ import { Clock, Download, HardDrive, RotateCcw, Trash2, X } from 'lucide-react'
 
 import { useObjectUrlRef } from '@/shared/hooks/useObjectUrl'
 import { formatBytes, formatDuration } from '@/shared/lib/format'
-import { GlassButton } from '@/shared/ui/GlassButton'
-import { GlassPill } from '@/shared/ui/GlassPill'
+import { Button } from '@/shared/ui/Button'
+import { Tag } from '@/shared/ui/Tag'
 
 import { downloadRecording } from '../lib/recordingFile'
 import type { SavedRecording } from '../store'
@@ -26,10 +26,10 @@ export function RecordingPreview({
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="truncate text-lg font-semibold tracking-tight" title={recording.name}>
+        <h2 className="truncate text-base font-medium" title={recording.name}>
           {recording.name}
         </h2>
-        <GlassButton
+        <Button
           variant="ghost"
           size="icon-sm"
           aria-label="Close preview"
@@ -42,22 +42,22 @@ export function RecordingPreview({
         ref={videoRef}
         controls
         playsInline
-        className="aspect-video w-full rounded-frame bg-black shadow-[inset_0_0_0_1px_var(--glass-border-bottom)]"
+        className="aspect-video w-full rounded-control border border-line bg-black"
       />
 
-      <div className="glass-inset mt-4 flex flex-col gap-3 p-2 [--pill-radius:var(--radius-card)] sm:flex-row sm:items-center sm:justify-between sm:[--pill-radius:999px]">
+      <div className="mt-4 flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2">
-          <GlassButton
+          <Button
             variant="primary"
             icon={<Download size={16} />}
             onClick={() => downloadRecording(recording)}
           >
             Download
-          </GlassButton>
-          <GlassButton variant="glass" icon={<RotateCcw size={16} />} onClick={onRerecord}>
+          </Button>
+          <Button variant="secondary" icon={<RotateCcw size={16} />} onClick={onRerecord}>
             Re-record
-          </GlassButton>
-          <GlassButton
+          </Button>
+          <Button
             variant="ghost"
             size="icon"
             aria-label="Delete recording"
@@ -66,13 +66,13 @@ export function RecordingPreview({
             icon={<Trash2 size={16} />}
           />
         </div>
-        <div className="flex gap-2 px-1 sm:px-0">
-          <GlassPill mono icon={<Clock size={13} />} aria-label="Duration">
+        <div className="flex gap-2">
+          <Tag mono icon={<Clock size={13} />} aria-label="Duration">
             {formatDuration(recording.duration)}
-          </GlassPill>
-          <GlassPill mono icon={<HardDrive size={13} />} aria-label="File size">
+          </Tag>
+          <Tag mono icon={<HardDrive size={13} />} aria-label="File size">
             {formatBytes(recording.size)}
-          </GlassPill>
+          </Tag>
         </div>
       </div>
     </div>

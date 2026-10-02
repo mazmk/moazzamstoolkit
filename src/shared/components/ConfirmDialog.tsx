@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 
-import { GlassButton } from '@/shared/ui/GlassButton'
-import { GlassCard } from '@/shared/ui/GlassCard'
+import { Button } from '@/shared/ui/Button'
+import { Panel } from '@/shared/ui/Panel'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -53,22 +53,22 @@ export function ConfirmDialog({
       // The dialog itself stays transparent: glass utilities set position: relative, which would
       // override the UA's position: fixed for modal dialogs. The backdrop dims without blurring,
       // keeping the number of blurred layers down.
-      className="m-auto w-[calc(100%-2rem)] max-w-sm overflow-visible bg-transparent p-0 text-fg backdrop:bg-black/45"
+      className="m-auto w-[calc(100%-2rem)] max-w-sm overflow-visible bg-transparent p-0 text-ink backdrop:bg-scrim"
     >
-      <GlassCard variant="strong" className="p-6">
+      <Panel className="p-6">
         <h2 id="confirm-dialog-title" className="text-lg font-semibold tracking-tight">
           {title}
         </h2>
-        {description && <div className="mt-2 text-sm text-fg-muted">{description}</div>}
+        {description && <div className="mt-2 text-sm text-muted">{description}</div>}
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <GlassButton variant="glass" autoFocus onClick={onCancel}>
+          <Button variant="secondary" autoFocus onClick={onCancel}>
             {cancelLabel}
-          </GlassButton>
-          <GlassButton variant={tone === 'danger' ? 'danger' : 'primary'} onClick={onConfirm}>
+          </Button>
+          <Button variant={tone === 'danger' ? 'danger' : 'primary'} onClick={onConfirm}>
             {confirmLabel}
-          </GlassButton>
+          </Button>
         </div>
-      </GlassCard>
+      </Panel>
     </dialog>
   )
 }

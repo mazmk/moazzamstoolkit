@@ -1,0 +1,11 @@
+{
+  "name": "Moazzam's Toolkit",
+  "short_name": "Toolkit",
+  "description": "Small tools for annoying jobs. Everything runs in your browser.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f3f0e8",
+  "theme_color": "#f3f0e8",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

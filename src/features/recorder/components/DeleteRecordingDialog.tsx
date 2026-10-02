@@ -31,8 +31,8 @@ export function DeleteRecordingDialog({
       title="Delete recording?"
       description={
         <>
-          <span className="font-medium text-fg">{recording?.name}</span> will be permanently removed
-          from this browser. This can’t be undone.
+          <span className="font-medium text-ink">{recording?.name}</span> will be permanently
+          removed from this browser. This can’t be undone.
         </>
       }
       confirmLabel="Delete"

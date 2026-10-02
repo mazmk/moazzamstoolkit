@@ -1,73 +1,76 @@
-import { Download, Video } from 'lucide-react'
-import { AnimatePresence, LazyMotion, MotionConfig, m } from 'motion/react'
-import { NavLink, useLocation, useOutlet } from 'react-router-dom'
+import { ChevronDown, LayoutGrid, Loader2 } from 'lucide-react'
+import { Suspense, useEffect, useState } from 'react'
+import { Link, useLocation, useOutlet } from 'react-router-dom'
 
+import logoMark from '@/assets/logo-mark.svg'
 import { ThemeToggle } from '@/shared/theme/ThemeToggle'
 import { useApplyTheme } from '@/shared/theme/theme'
-import { AmbientBackground } from '@/shared/ui/AmbientBackground'
+import { Backdrop } from '@/shared/ui/Backdrop'
+import { Button } from '@/shared/ui/Button'
+import { Menu } from '@/shared/ui/Menu'
 import { Toaster } from '@/shared/ui/Toast'
 
-const NAV_ITEMS = [
-  { to: '/record', label: 'Record', icon: Video },
-  { to: '/download', label: 'Download', icon: Download },
-]
-
-const loadMotionFeatures = () => import('./motionFeatures').then((mod) => mod.default)
-
-const SPRING = { type: 'spring', stiffness: 420, damping: 34 } as const
-
-const routeKey = (pathname: string) => (pathname.startsWith('/download') ? '/download' : '/record')
+import { CommandPalette, isMac } from './CommandPalette'
+import { findToolByPath, toolsByCategory } from './tools'
 
 function Logo() {
   return (
-    <span className="flex items-center gap-2 pl-1">
-      <span
-        aria-hidden
-        className="grid size-8 place-items-center rounded-full bg-[image:var(--accent-gradient)] shadow-[var(--accent-glow)]"
-      >
-        <span className="size-3 rounded-full bg-white/95" />
-      </span>
-      <span className="hidden text-sm font-semibold tracking-tight sm:inline">ScreenNest</span>
-    </span>
+    <Link
+      to="/"
+      aria-label="Moazzam’s Toolkit — all tools"
+      className="flex shrink-0 items-center gap-2 rounded-full py-1 pr-2 pl-1"
+    >
+      <img src={logoMark} alt="" width={28} height={28} className="size-7" />
+      <span className="hidden text-sm font-medium tracking-tight sm:inline">Moazzam’s Toolkit</span>
+    </Link>
   )
 }
 
-/**
- * The route switch looks like the shared Segmented control but is made of real links (so
- * middle-click and "open in new tab" work). Its indicator is a shared-layout Motion element.
- */
-function NavSwitch() {
-  const active = routeKey(useLocation().pathname)
+function ToolsMenu({ currentPath }: { currentPath: string }) {
+  const groups = toolsByCategory().map(({ category, tools }) => ({
+    label: category,
+    items: tools.map((tool) => {
+      const Icon = tool.icon
+      return {
+        id: tool.id,
+        label: tool.name,
+        description: tool.description,
+        icon: <Icon size={16} />,
+        to: tool.path,
+        hint: tool.path === currentPath ? 'OPEN' : undefined,
+      }
+    }),
+  }))
 
   return (
-    <nav
-      aria-label="Main"
-      className="glass-inset relative inline-grid auto-cols-fr grid-flow-col p-1"
-    >
-      {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
-        const isActive = to === active
-        return (
-          <NavLink
-            key={to}
-            to={to}
-            aria-current={isActive ? 'page' : undefined}
-            className={`relative inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors duration-200 sm:px-4 ${
-              isActive ? 'text-accent-fg' : 'text-fg-muted hover:text-fg'
-            }`}
-          >
-            {isActive && (
-              <m.span
-                layoutId="nav-indicator"
-                transition={SPRING}
-                className="absolute inset-0 rounded-full bg-[image:var(--accent-gradient)] shadow-[var(--accent-glow)]"
-              />
-            )}
-            <Icon size={15} className="relative hidden sm:block" />
-            <span className="relative">{label}</span>
-          </NavLink>
-        )
-      })}
-    </nav>
+    <Menu
+      label="Tools"
+      align="start"
+      width={340}
+      groups={[
+        { items: [{ id: 'home', label: 'All tools', icon: <LayoutGrid size={16} />, to: '/' }] },
+        ...groups,
+      ]}
+      trigger={(props) => (
+        <Button {...props} variant="ghost" size="sm" className="gap-1 rounded-full text-[13px]">
+          Tools
+          <ChevronDown
+            size={14}
+            aria-hidden
+            className={`transition-transform duration-150 ${props['aria-expanded'] ? 'rotate-180' : ''}`}
+          />
+        </Button>
+      )}
+    />
+  )
+}
+
+function PageFallback() {
+  return (
+    <div role="status" className="flex py-24 text-muted">
+      <Loader2 size={20} className="animate-spin" aria-hidden />
+      <span className="sr-only">Loading tool…</span>
+    </div>
   )
 }
 
@@ -75,46 +78,84 @@ export function Layout() {
   useApplyTheme()
   const { pathname } = useLocation()
   const outlet = useOutlet()
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
+  const tool = findToolByPath(pathname)
+  const full = tool?.layout === 'full'
+  const mac = isMac()
+  const shortcut = mac ? '⌘K' : 'Ctrl K'
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setPaletteOpen((o) => !o)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  useEffect(() => {
+    document.title = tool ? `${tool.name} · Moazzam’s Toolkit` : 'Moazzam’s Toolkit'
+  }, [tool])
 
   return (
-    // reducedMotion="user": Motion drops transform animations when the OS asks for less motion.
-    <LazyMotion features={loadMotionFeatures} strict>
-      <MotionConfig reducedMotion="user">
-        <AmbientBackground />
+    <>
+      <Backdrop />
 
-        <div className="flex min-h-dvh flex-col">
-          <header className="sticky top-0 z-40 px-3 pt-3 sm:pt-5">
-            {/* The nav bar is the blurred layer; its controls use the non-blurred inset material. */}
-            <div className="glass-strong mx-auto flex max-w-[720px] items-center justify-between gap-2 rounded-full p-1.5">
-              <Logo />
-              <NavSwitch />
+      <div className={`flex flex-col ${full ? 'h-dvh' : 'min-h-dvh'}`}>
+        {/* Sticky floating pill; page content scrolls underneath its restrained glass. */}
+        <header className="sticky top-4 z-40 shrink-0 px-3">
+          <div className="mx-auto flex max-w-[880px] items-center gap-1 rounded-full glass-float p-1 [--float-mix:72%]">
+            <Logo />
+            <nav aria-label="Main" className="flex items-center">
+              <ToolsMenu currentPath={pathname} />
+            </nav>
+            <div className="ml-auto flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPaletteOpen(true)}
+                aria-label={`Search tools (${shortcut})`}
+                aria-keyshortcuts={mac ? 'Meta+K' : 'Control+K'}
+                title="Search tools"
+                className="hidden h-7 items-center rounded-[6px] border border-line bg-surface px-2 font-mono text-[11px] text-muted transition-colors duration-150 ease-out hover:text-ink sm:inline-flex"
+              >
+                {shortcut}
+              </button>
               <ThemeToggle />
             </div>
-          </header>
+          </div>
+        </header>
 
-          <main className="mx-auto w-full max-w-[720px] flex-1 px-4 pt-10 pb-16 sm:pt-16 sm:pb-24">
-            <AnimatePresence mode="wait" initial={false}>
-              {/* Opacity + translate only: a `filter` here (even blur(0)) would make this wrapper a
-                backdrop root and stop every glass card inside from blurring the background. */}
-              <m.div
-                key={routeKey(pathname)}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {outlet}
-              </m.div>
-            </AnimatePresence>
-          </main>
+        <main
+          className={
+            full
+              ? 'flex min-h-0 w-full flex-1 flex-col px-3 pt-8 pb-3'
+              : 'mx-auto w-full max-w-[880px] flex-1 px-5 pt-16 pb-20 sm:px-8 sm:pt-24'
+          }
+        >
+          {/* Re-keyed per route so each page change plays the 8px fade-up. */}
+          <div
+            key={tool?.id ?? pathname}
+            className={`motion-safe:animate-[page-in_160ms_var(--ease)] ${full ? 'flex min-h-0 flex-1 flex-col' : ''}`}
+          >
+            <Suspense fallback={<PageFallback />}>{outlet}</Suspense>
+          </div>
+        </main>
 
-          <footer className="pb-8 text-center text-xs text-fg-muted">
-            Everything stays in your browser.
+        {!full && (
+          <footer className="mx-auto w-full max-w-[880px] px-5 pb-8 sm:px-8">
+            <div className="flex flex-wrap justify-between gap-2 border-t border-line pt-4 font-mono text-[11px] tracking-[0.06em] text-muted uppercase">
+              <span>Moazzam’s Toolkit</span>
+              <span>Runs in your browser · Nothing is uploaded</span>
+            </div>
           </footer>
-        </div>
+        )}
+      </div>
 
-        <Toaster />
-      </MotionConfig>
-    </LazyMotion>
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <Toaster />
+    </>
   )
 }

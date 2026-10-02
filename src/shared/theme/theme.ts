@@ -5,6 +5,7 @@ import { persist } from 'zustand/middleware'
 export type Theme = 'light' | 'dark' | 'system'
 
 // Keep in sync with the inline script in index.html, which applies the theme before first paint.
+// The 'screennest:' prefix predates the rename; changing it would reset every user's saved theme.
 export const THEME_STORAGE_KEY = 'screennest:theme'
 
 interface ThemeStore {
