@@ -45,6 +45,7 @@ const inlineJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u0
 
 const APP_CATEGORY: Record<string, string> = {
   Video: 'MultimediaApplication',
+  Images: 'MultimediaApplication',
   Documents: 'UtilitiesApplication',
   Developer: 'DeveloperApplication',
 }

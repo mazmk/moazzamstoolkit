@@ -4,10 +4,17 @@ type TagProps = ComponentPropsWithoutRef<'span'> & {
   icon?: ReactNode
   /** Monospace — for sizes, durations, categories and other labels. Default true. */
   mono?: boolean
-  tone?: 'muted' | 'ink' | 'accent'
+  tone?: 'muted' | 'ink' | 'accent' | 'success' | 'warning' | 'danger'
 }
 
-const TONES = { muted: 'text-muted', ink: 'text-ink', accent: 'text-accent-text' }
+const TONES = {
+  muted: 'text-muted',
+  ink: 'text-ink',
+  accent: 'text-accent-text',
+  success: 'text-success',
+  warning: 'text-warning',
+  danger: 'text-danger',
+}
 
 /** A small static badge with a hairline outline. */
 export function Tag({

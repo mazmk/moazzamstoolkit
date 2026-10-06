@@ -90,6 +90,7 @@ export function Layout() {
 
   const tool = findToolByPath(pathname)
   const full = tool?.layout === 'full'
+  const width = tool?.layout === 'wide' ? 'max-w-[1200px]' : 'max-w-[880px]'
   const mac = isMac()
   const shortcut = mac ? '⌘K' : 'Ctrl K'
 
@@ -146,7 +147,7 @@ export function Layout() {
           className={
             full
               ? 'flex min-h-0 w-full flex-1 flex-col px-3 pt-8 pb-3'
-              : 'mx-auto w-full max-w-[880px] flex-1 px-5 pt-16 pb-20 sm:px-8 sm:pt-24'
+              : `mx-auto w-full ${width} flex-1 px-5 pt-16 pb-20 sm:px-8 sm:pt-24`
           }
         >
           {/* Re-keyed per route so each page change plays the 8px fade-up. */}
@@ -159,7 +160,7 @@ export function Layout() {
         </main>
 
         {!full && (
-          <footer className="mx-auto w-full max-w-[880px] px-5 pb-8 sm:px-8">
+          <footer className={`mx-auto w-full ${width} px-5 pb-8 sm:px-8`}>
             <div className="flex flex-wrap justify-between gap-2 border-t border-line pt-4 font-mono text-[11px] tracking-[0.06em] text-muted uppercase">
               <span>Moazzam’s Toolkit</span>
               <span>Runs in your browser · Nothing is uploaded</span>

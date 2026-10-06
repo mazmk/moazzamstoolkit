@@ -10,6 +10,7 @@ Small tools for annoying jobs. Everything runs in your browser — nothing is up
 | **Video Downloader** | `/download` | Save Loom videos from a share link. Loom's endpoints allow cross-origin requests, so it runs fully in the browser; newer DASH videos have their audio and video merged client-side with [mediabunny](https://mediabunny.dev) (no re-encoding). Jam isn't supported yet — it has no public endpoint for a recording's video. |
 | **WebM to MP4** | `/webm-to-mp4` | Convert WebM (e.g. browser recordings) to H.264/AAC MP4 with [ffmpeg.wasm](https://ffmpegwasm.netlify.app). Uses the single-threaded core, so no COOP/COEP headers are needed. The ~32 MB core is self-hosted and only downloads when the page is opened. |
 | **Markdown Viewer** | `/markdown` | Live GFM preview with syntax highlighting and sanitized output, synced scrolling, autosave, and export to Markdown, self-contained HTML, or PDF (via the print dialog). |
+| **Image Compressor** | `/image-compress` | Batch-compress JPEG, PNG, WebP, AVIF, BMP and GIF images from files, folders, the clipboard, or ZIP/RAR archives unpacked in the browser. One quality slider (default 50) with per-image overrides or a target size, output format (keep, JPEG, WebP, AVIF, PNG), resize, EXIF/GPS stripping, renaming, before/after compare, and a stored ZIP or save-to-folder download. Encoders are [jSquash](https://github.com/jamsinclair/jSquash) WASM builds (MozJPEG, libwebp, libavif, oxipng; single-threaded, no COOP/COEP) in a Web Worker pool; lossy PNG uses [UPNG.js](https://github.com/photopea/UPNG.js); archives use [fflate](https://github.com/101arrowz/fflate) and [node-unrar-js](https://github.com/YuJianrong/node-unrar.js). Every codec loads only when first needed. |
 
 Light, dark and system themes are supported. Press <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd> to jump between tools.
 
@@ -76,6 +77,7 @@ To check a deployed preview, paste a URL into [opengraph.xyz](https://www.opengr
 - **ffmpeg.wasm 0.12** (`@ffmpeg/ffmpeg`, `@ffmpeg/util`, single-threaded `@ffmpeg/core`)
 - **react-markdown + remark-gfm + rehype-sanitize + rehype-highlight**
 - **mediabunny**, **idb-keyval**, **fix-webm-duration**
+- **jSquash** (`@jsquash/jpeg`, `webp`, `avif`, `oxipng`), **UPNG.js**, **fflate**, **node-unrar-js** (Image Compressor)
 - **lucide-react** icons (1.5px stroke) · **Instrument Serif, Geist, JetBrains Mono** via Fontsource (self-hosted)
 - **Vitest + React Testing Library**
 
@@ -123,6 +125,8 @@ src/
     downloader/            # Video Downloader
     webm-to-mp4/           # components/ + lib/ (useFfmpegConverter, args builder, helpers)
     markdown/              # components/ + lib/ (export builders, document helpers)
+    image-compress/        # components/ · hooks/ (store, runner, add files, export) ·
+                           # lib/ (pure helpers + tests, worker pool) · workers/ (compress, archive, zip)
   shared/
     ui/                    # glass components
     hooks/  lib/  theme/  components/

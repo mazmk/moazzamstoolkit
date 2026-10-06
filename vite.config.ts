@@ -11,7 +11,21 @@ export default defineConfig({
   plugins: [tailwindcss(), react(), seo()],
   // ffmpeg.wasm spawns its worker with `new URL('./worker.js', import.meta.url)`; pre-bundling
   // would move the module and break that URL in dev.
-  optimizeDeps: { exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'] },
+  // jSquash codecs find their .wasm the same way, so they're excluded for the same reason.
+  // Worker-only deps are pre-bundled up front; discovered later, Vite would reload the page mid-batch.
+  optimizeDeps: {
+    include: ['fflate', 'upng-js', 'node-unrar-js'],
+    exclude: [
+      '@ffmpeg/ffmpeg',
+      '@ffmpeg/util',
+      '@jsquash/jpeg',
+      '@jsquash/webp',
+      '@jsquash/avif',
+      '@jsquash/oxipng',
+    ],
+  },
+  // ES-module workers, so the image compressor's workers can lazy-load codecs with import().
+  worker: { format: 'es' },
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),

@@ -1,4 +1,4 @@
-import { Download, FileText, FileVideo, Video, type LucideIcon } from 'lucide-react'
+import { Download, FileText, FileVideo, ImageDown, Video, type LucideIcon } from 'lucide-react'
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 
 /**
@@ -39,6 +39,10 @@ const UI: Record<string, Pick<ToolDefinition, 'icon' | 'component'>> = {
   'webm-to-mp4': {
     icon: FileVideo,
     component: lazy(() => import('@/features/webm-to-mp4/components/WebmToMp4Page')),
+  },
+  'image-compress': {
+    icon: ImageDown,
+    component: lazy(() => import('@/features/image-compress/components/ImageCompressPage')),
   },
   'markdown-viewer': {
     icon: FileText,

@@ -25,9 +25,9 @@ describe('tool registry', () => {
     expect(toolsByCategory().flatMap((g) => g.tools)).toHaveLength(TOOLS.length)
   })
 
-  it('registers the four tools', () => {
+  it('registers the five tools', () => {
     expect(TOOLS.map((t) => t.path).sort()).toEqual(
-      ['/download', '/markdown', '/record', '/webm-to-mp4'].sort(),
+      ['/download', '/image-compress', '/markdown', '/record', '/webm-to-mp4'].sort(),
     )
   })
 

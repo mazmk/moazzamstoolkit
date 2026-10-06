@@ -26,6 +26,8 @@ src/app/toolMeta.ts      Plain data: site + every tool's name, path, copy, SEO, 
 src/app/tools.ts         The registry: toolMeta + icon + lazy page component.
 src/app/router.tsx       Routes generated from the registry. Never hardcode a route list elsewhere.
 src/app/Layout.tsx       Floating navbar, page fade, footer, per-page title/description/canonical.
+                         Per-tool `layout`: narrow (880px, default) · wide (1200px) · full.
+                         `layout` per tool: narrow (880px, default) · wide (1200px) · full.
 src/features/<tool>/     components/ (UI) · lib/ (logic, hooks, pure helpers + tests)
 src/shared/ui/           Shared components — use these before writing new ones.
 src/shared/hooks|lib/    Shared hooks and helpers (object URLs, media queries, formatting).
@@ -77,7 +79,7 @@ Direction: "workshop bench / editorial tool index" — warm paper, ink type, one
 
 ## Shared components — use before building
 
-`src/shared/ui/`: `Panel`, `Button` (primary · secondary · ghost · danger), `Tag`, `TextField`, `Chip`, `Segmented`, `Menu` (menu-button pattern, portalled), `Toast` (`toast(message, tone)`), `ProgressBar`, `FileDropzone`, `SplitPane`, `InlineError`, `PageHeader` (`toolId` derives the "TOOL 03 / VIDEO" eyebrow), `Backdrop`, plus `ConfirmDialog` in `src/shared/components/`.
+`src/shared/ui/`: `Panel`, `Button` (primary · secondary · ghost · danger), `Tag` (tones: muted · ink · accent · success · warning · danger), `TextField`, `Chip`, `Segmented`, `Menu` (menu-button pattern, portalled), `Toast` (`toast(message, tone)`), `ProgressBar`, `FileDropzone`, `SplitPane`, `InlineError`, `PageHeader` (`toolId` derives the "TOOL 03 / VIDEO" eyebrow), `Backdrop`, plus `ConfirmDialog` in `src/shared/components/`.
 
 - Start every tool page with `<PageHeader toolId="…" title="…" description="…" />`.
 - Add a new shared component only when a second feature needs it; keep feature-specific UI in the feature folder.
@@ -101,7 +103,10 @@ Direction: "workshop bench / editorial tool index" — warm paper, ink type, one
 - **`@theme inline` self-references** (`--font-mono: var(--font-mono)`) create a cycle. Source tokens use different names (`--font-code`, `--panel-radius`, …).
 - **Don't nest backdrop-filters**; floating panels portal to `<body>` (a blurred parent also becomes the containing block for `position: fixed`).
 - **`getDisplayMedia` needs a recent user gesture** (Safari allows ~1s) — don't put delays before calling it.
-- **ffmpeg.wasm** is the single-threaded core (no COOP/COEP); it's excluded from `optimizeDeps` so its worker URL survives in dev.
+- **ffmpeg.wasm** is the single-threaded core (no COOP/COEP); it's excluded from `optimizeDeps` so its worker URL survives in dev. The jSquash codecs are excluded for the same reason (they find their `.wasm` via `import.meta.url`).
+- **Workers are built as ES modules** (`worker.format: 'es'` in `vite.config.ts`) so they can lazy-load with `import()`. Deps imported only inside workers (`fflate`, `upng-js`, `node-unrar-js`) are in `optimizeDeps.include`; otherwise dev discovers them mid-session and reloads the page.
+- **jSquash AVIF and oxipng** pick a multi-threaded build at runtime; the Image Compressor imports their single-threaded codec files directly (`workers/codecs.ts`) so the MT builds never ship.
+- **Typed arrays and `Blob`**: TS 5.7+ types `Uint8Array` by buffer; library output (fflate, postMessage) is `Uint8Array<ArrayBufferLike>`, which `Blob` rejects. Narrow with `plainBytes()` (`features/image-compress/lib/bytes.ts`) rather than casting.
 - **Contrast:** darkening a fill under dark text *lowers* contrast — check hover states, not just resting ones.
 - **jsdom** lacks `<dialog>.showModal` and `URL.createObjectURL`; minimal polyfills live in `src/test/setup.ts`.
 

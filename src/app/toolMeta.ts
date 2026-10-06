@@ -4,7 +4,7 @@
  * Order here is the order tools appear everywhere.
  */
 
-export const TOOL_CATEGORIES = ['Video', 'Documents', 'Developer'] as const
+export const TOOL_CATEGORIES = ['Video', 'Documents', 'Images', 'Developer'] as const
 export type ToolCategory = (typeof TOOL_CATEGORIES)[number]
 
 export const SITE = {
@@ -13,7 +13,7 @@ export const SITE = {
   author: 'Moazzam Ali',
   tagline: 'Small tools for annoying jobs.',
   description:
-    'Free browser tools for annoying jobs: record your screen, download Loom videos, convert WebM to MP4 and write Markdown. Everything runs on your device — nothing is uploaded.',
+    'Free browser tools for annoying jobs: record your screen, download Loom videos, convert WebM to MP4, compress images and write Markdown. Everything runs on your device — nothing is uploaded.',
   locale: 'en_US',
   themeColor: { light: '#f3f0e8', dark: '#121110' },
 } as const
@@ -27,8 +27,8 @@ export interface ToolMeta {
   /** Absolute route path, e.g. "/record". */
   path: string
   category: ToolCategory
-  /** `narrow` uses the centred column; `full` fills the viewport below the navbar. */
-  layout?: 'narrow' | 'full'
+  /** `narrow` uses the centred column; `wide` a wider one for two-column tools; `full` fills the viewport below the navbar. */
+  layout?: 'narrow' | 'wide' | 'full'
   /** Extra words the command palette should match on. */
   keywords?: string[]
   /** Search-phrased name for <title> and og:title; kept short so it isn't truncated. */
@@ -130,6 +130,48 @@ export const TOOL_META: ToolMeta[] = [
       'The editor is a plain text area (no line numbers or Markdown shortcuts).',
       'PDF export uses the browser’s print dialog — choose “Save as PDF”.',
       'Documents are stored only in this browser.',
+    ],
+  },
+  {
+    id: 'image-compress',
+    name: 'Image Compressor',
+    description: 'Compress, resize and convert a batch of images, then download them as a ZIP.',
+    path: '/image-compress',
+    category: 'Images',
+    layout: 'wide',
+    keywords: [
+      'jpeg',
+      'jpg',
+      'png',
+      'webp',
+      'avif',
+      'resize',
+      'optimize',
+      'shrink',
+      'batch',
+      'zip',
+      'exif',
+    ],
+    seoTitle: 'Batch Image Compressor',
+    seoDescription:
+      'Compress hundreds of JPEG, PNG, WebP and AVIF images at once, resize them, strip EXIF and GPS, and download a ZIP. Runs in your browser; nothing is uploaded.',
+    capabilities: [
+      'Compresses many images at once with WebAssembly encoders (MozJPEG, libwebp, libavif, oxipng) running in a pool of Web Workers, so the page stays responsive.',
+      'Input: JPEG, PNG, WebP, AVIF, BMP and static GIF, from a file picker, a folder, drag and drop (including folders), clipboard paste, or ZIP and RAR archives unpacked in the browser.',
+      'One quality slider (0–100, default 50) for the whole batch with Low/Medium/High presets, a per-image quality override, or a target size per image ("under 200 KB") found by binary search.',
+      'Output format: keep original, JPEG, WebP, AVIF or PNG; transparent images converted to JPEG are flattened onto a chosen background colour. PNG quality reduces the colour palette; 100 is lossless.',
+      'Resize to a maximum dimension or a percentage, never upscaling. EXIF rotation is applied, then metadata (including GPS) is stripped by default.',
+      'If a compressed image would be larger than the original, the original is kept (with metadata still stripped for JPEG, PNG and WebP) and marked "Already optimized".',
+      'Before/after comparison with a draggable divider and 100% zoom; sort, filter and select images; rename with prefix, suffix, lowercase, slug and numbering; keep folder structure.',
+      'Downloads single images, a selection, or everything as a ZIP; Chromium browsers can also save straight into a folder.',
+    ],
+    limits: [
+      'Animated GIF, animated WebP and APNG are skipped, not compressed. Images over 100 megapixels are skipped.',
+      'HEIC/HEIF input only works in browsers that can decode it natively (Safari); other browsers report it as unsupported.',
+      'Archives: at most 2,000 images and 2 GB uncompressed per archive; password-protected archives and archives inside archives are not opened. 7z and TAR are not supported.',
+      'Keeping metadata (strip off) is supported for JPEG to JPEG only; other outputs always drop it. Colour profiles are converted to sRGB when re-encoding.',
+      'AVIF encoding is single-threaded and slow for large photos. A single ZIP must stay under 4 GB; for very large batches use "Save to folder" (Chromium only).',
+      'Images, results and the list are kept only in memory and are cleared when you leave the page; only the settings are remembered.',
     ],
   },
 ]
